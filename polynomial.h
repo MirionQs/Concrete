@@ -242,8 +242,8 @@ namespace concrete {
 	}
 
 	template<::std::uint32_t _p, ::std::uint32_t _g>
-	polynomial<_p, _g> hadamard_product(const polynomial<_p, _g>& p, const polynomial<_p, _g>& q) noexcept {
-		return polynomial<_p, _g>{p}.hadamard_product(q);
+	polynomial<_p, _g> hadamard_product(polynomial<_p, _g> p, const polynomial<_p, _g>& q) noexcept {
+		return p.hadamard_product(q);
 	}
 
 }
