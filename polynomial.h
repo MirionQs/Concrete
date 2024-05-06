@@ -35,6 +35,9 @@ namespace concrete {
 		}
 
 		void _fastFourierTransform(_iter x, ::std::size_t n) noexcept {
+			if (n == 1) {
+				return;
+			}
 			for (::std::size_t half{n >> 1}; half != 1; half >>= 1) {
 				for (::std::size_t i{0}; i != n; i += half << 1) {
 					auto r{_roots.begin() + half};
@@ -53,6 +56,9 @@ namespace concrete {
 		}
 
 		void _inverseFastFourierTransform(_iter x, ::std::size_t n) noexcept {
+			if (n == 1) {
+				return;
+			}
 			_value nInverse{_p - ((_p - 1) >> ::std::countr_zero(n))};
 			for (::std::size_t i{0}; i != n; i += 2) {
 				_value p{x[i]}, q{x[i + 1]};
