@@ -7,6 +7,7 @@
 namespace concrete {
 
 	template<::std::uint32_t _p>
+		requires(_p < (1 << 30) && (_p & 1) == 1)
 	class int_p {
 		::std::uint32_t _value;
 
