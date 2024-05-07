@@ -24,7 +24,7 @@ namespace concrete {
 				return;
 			}
 			_roots.resize(n);
-			::std::uint32_t m{(_p - 1) >> (::std::countr_zero(oldSize) + 1)};
+			::std::uint32_t m{_p >> ::std::countr_zero(oldSize) >> 1};
 			for (::std::size_t half{oldSize}; half != n; half <<= 1, m >>= 1) {
 				_value r{::concrete::power(_gInverse, m)};
 				for (::std::size_t i{half}; i != half << 1; i += 2) {
@@ -59,7 +59,7 @@ namespace concrete {
 			if (n == 1) {
 				return;
 			}
-			_value nInverse{_p - ((_p - 1) >> ::std::countr_zero(n))};
+			_value nInverse{_p - (_p >> ::std::countr_zero(n))};
 			for (::std::size_t i{0}; i != n; i += 2) {
 				_value p{x[i]}, q{x[i + 1]};
 				x[i] = (p + q) * nInverse;
