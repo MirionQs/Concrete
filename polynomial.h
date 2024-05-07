@@ -8,7 +8,7 @@
 namespace concrete {
 
 	template<::std::uint32_t _p = 998244353, ::std::uint32_t _g = 3>
-	class polynomial : public ::std::vector<::concrete::int_p<_p>> {
+	struct polynomial : public ::std::vector<::concrete::int_p<_p>> {
 		using _parent = ::std::vector<::concrete::int_p<_p>>;
 		using _value = _parent::value_type;
 		using _iter = _parent::iterator;
@@ -80,7 +80,6 @@ namespace concrete {
 			}
 		}
 
-	public:
 		using _parent::_parent;
 
 		void negate(_iter x, ::std::size_t n) noexcept {

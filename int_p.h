@@ -8,7 +8,7 @@ namespace concrete {
 
 	template<::std::uint32_t _p>
 		requires(_p < (1 << 30) && (_p & 1) == 1)
-	class int_p {
+	struct int_p {
 		::std::uint32_t _value;
 
 		static constexpr ::std::uint32_t _pDouble{_p << 1};
@@ -25,7 +25,6 @@ namespace concrete {
 			return (v + ::std::uint64_t{static_cast<::std::uint32_t>(v) * _pInverseNegate} *_p) >> 32;
 		}
 
-	public:
 		constexpr int_p(::std::uint32_t v = 0) noexcept {
 			_value = _reduce(::std::uint64_t{v} *_rSquare);
 		}
