@@ -137,6 +137,26 @@ namespace concrete {
 	};
 
 	template<::std::uint32_t _p>
+	constexpr int_p<_p> operator+(::std::uint32_t v, int_p<_p> p) noexcept {
+		return int_p<_p>{v} += p;;
+	}
+
+	template<::std::uint32_t _p>
+	constexpr int_p<_p> operator-(::std::uint32_t v, int_p<_p> p) noexcept {
+		return int_p<_p>{v} -= p;
+	}
+
+	template<::std::uint32_t _p>
+	constexpr int_p<_p> operator*(::std::uint32_t v, int_p<_p> p) noexcept {
+		return int_p<_p>{v} *= p;
+	}
+
+	template<::std::uint32_t _p>
+	constexpr int_p<_p> operator/(::std::uint32_t v, int_p<_p> p) noexcept {
+		return int_p<_p>{v} /= p;
+	}
+
+	template<::std::uint32_t _p>
 	constexpr int_p<_p> power(int_p<_p> p, ::std::uint32_t v) noexcept {
 		int_p<_p> res{1};
 		while (v != 0) {
