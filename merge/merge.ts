@@ -1,9 +1,8 @@
 import fs from 'fs'
 import clipboardy from 'clipboardy'
 
-let result = ''
-
 const merge = (path: string) => {
+    let result = ''
     for (const line of fs.readFileSync(path).toString().split('\n')) {
         if (line.startsWith('#pragma')) {
             continue
