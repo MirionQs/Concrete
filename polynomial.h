@@ -25,7 +25,7 @@ namespace concrete {
 			}
 			_roots.resize(n);
 			::std::uint32_t m{(_p - 1) >> (::std::countr_zero(oldSize) + 1)};
-			for (::std::size_t half{2}; half != n; half <<= 1, m >>= 1) {
+			for (::std::size_t half{oldSize}; half != n; half <<= 1, m >>= 1) {
 				_value r{::concrete::power(_gInverse, m)};
 				for (::std::size_t i{half}; i != half << 1; i += 2) {
 					_roots[i] = _roots[i >> 1];
@@ -136,6 +136,10 @@ namespace concrete {
 			}
 		}
 
+		void inverse(_iter x, ::std::size_t n) noexcept {
+
+		}
+
 		polynomial& negate() noexcept {
 			negate(this->begin(), this->size());
 			return *this;
@@ -182,6 +186,11 @@ namespace concrete {
 
 		polynomial& hadamard_product(const polynomial& p) noexcept {
 			hadamard_product(this->begin(), this->size(), p.begin());
+			return *this;
+		}
+
+		polynomial& inverse(const polynomial& p) noexcept {
+			inverse(this->begin(), this->size());
 			return *this;
 		}
 
@@ -244,6 +253,11 @@ namespace concrete {
 	template<::std::uint32_t _p, ::std::uint32_t _g>
 	polynomial<_p, _g> hadamard_product(polynomial<_p, _g> p, const polynomial<_p, _g>& q) noexcept {
 		return p.hadamard_product(q);
+	}
+
+	template<::std::uint32_t _p, ::std::uint32_t _g>
+	polynomial<_p, _g> inverse(polynomial<_p, _g> p) noexcept {
+		return p.inverse();
 	}
 
 }
