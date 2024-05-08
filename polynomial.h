@@ -12,9 +12,7 @@ namespace concrete {
 		using _parent = ::std::vector<::concrete::int_p<_p>>;
 		using _value = _parent::value_type;
 		using _iter = _parent::iterator;
-		using _constIter = _parent::const_iterator;
-
-		static constexpr _value _gInverse{::concrete::inverse(_value{_g})};
+		using _citer = _parent::const_iterator;
 
 		static inline ::std::vector<_value> _roots{1, 1};
 
@@ -24,9 +22,10 @@ namespace concrete {
 				return;
 			}
 			_roots.resize(n);
+			static constexpr _value gInverse{::concrete::inverse(_value{_g})};
 			::std::uint32_t m{_p >> ::std::countr_zero(oldSize) >> 1};
 			for (::std::size_t half{oldSize}; half != n; half <<= 1, m >>= 1) {
-				_value r{::concrete::power(_gInverse, m)};
+				_value r{::concrete::power(gInverse, m)};
 				for (::std::size_t i{half}; i != half << 1; i += 2) {
 					_roots[i] = _roots[i >> 1];
 					_roots[i + 1] = r * _roots[i];
@@ -34,10 +33,11 @@ namespace concrete {
 			}
 		}
 
-		void _fastFourierTransform(_iter x, ::std::size_t n) noexcept {
+		static void fast_fourier_transform(_iter x, ::std::size_t n) noexcept {
 			if (n == 1) {
 				return;
 			}
+			_precomputeRoots(n);
 			for (::std::size_t half{n >> 1}; half != 1; half >>= 1) {
 				for (::std::size_t i{0}; i != n; i += half << 1) {
 					auto r{_roots.begin() + half};
@@ -55,10 +55,11 @@ namespace concrete {
 			}
 		}
 
-		void _inverseFastFourierTransform(_iter x, ::std::size_t n) noexcept {
+		static void inverse_fast_fourier_transform(_iter x, ::std::size_t n) noexcept {
 			if (n == 1) {
 				return;
 			}
+			_precomputeRoots(n);
 			_value nInverse{_p - (_p >> ::std::countr_zero(n))};
 			for (::std::size_t i{0}; i != n; i += 2) {
 				_value p{x[i]}, q{x[i + 1]};
@@ -80,64 +81,64 @@ namespace concrete {
 			}
 		}
 
-		using _parent::_parent;
-
-		void negate(_iter x, ::std::size_t n) noexcept {
+		static void negate(_iter x, ::std::size_t n) noexcept {
 			for (::std::size_t i{0}; i != n; ++i) {
 				x[i].negate();
 			}
 		}
 
-		void add(_iter x, ::std::size_t n, _value v) noexcept {
+		static void add(_iter x, ::std::size_t n, _value v) noexcept {
 			x[0] += v;
 		}
 
-		void subtract(_iter x, ::std::size_t n, _value v) noexcept {
+		static void subtract(_iter x, ::std::size_t n, _value v) noexcept {
 			x[0] -= v;
 		}
 
-		void multiply(_iter x, ::std::size_t n, _value v) noexcept {
+		static void multiply(_iter x, ::std::size_t n, _value v) noexcept {
 			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] *= v;
 			}
 		}
 
-		void divide(_iter x, ::std::size_t n, _value v) noexcept {
+		static void divide(_iter x, ::std::size_t n, _value v) noexcept {
 			_value vInverse{::concrete::inverse(v)};
 			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] *= vInverse;
 			}
 		}
 
-		void add(_iter x, ::std::size_t n, _constIter y) noexcept {
+		static void add(_iter x, ::std::size_t n, _citer y) noexcept {
 			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] += y[i];
 			}
 		}
 
-		void subtract(_iter x, ::std::size_t n, _constIter y) noexcept {
+		static void subtract(_iter x, ::std::size_t n, _citer y) noexcept {
 			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] -= y[i];
 			}
 		}
 
-		void multiply(_iter x, ::std::size_t n, _iter y) noexcept {
+		static void multiply(_iter x, ::std::size_t n, _iter y) noexcept {
 			_precomputeRoots(n);
-			_fastFourierTransform(x, n);
-			_fastFourierTransform(y, n);
+			fast_fourier_transform(x, n);
+			fast_fourier_transform(y, n);
 			hadamard_product(x, n, y);
-			_inverseFastFourierTransform(x, n);
+			inverse_fast_fourier_transform(x, n);
 		}
 
-		void hadamard_product(_iter x, ::std::size_t n, _constIter y) noexcept {
+		static void hadamard_product(_iter x, ::std::size_t n, _citer y) noexcept {
 			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] *= y[i];
 			}
 		}
 
-		void inverse(_iter x, ::std::size_t n) noexcept {
+		static void inverse(_iter x, ::std::size_t n) noexcept {
 
 		}
+
+		using _parent::_parent;
 
 		polynomial& negate() noexcept {
 			negate(this->begin(), this->size());
@@ -181,16 +182,6 @@ namespace concrete {
 
 		polynomial& operator*=(const polynomial& p) noexcept {
 			return *this *= polynomial{p};
-		}
-
-		polynomial& hadamard_product(const polynomial& p) noexcept {
-			hadamard_product(this->begin(), this->size(), p.begin());
-			return *this;
-		}
-
-		polynomial& inverse(const polynomial& p) noexcept {
-			inverse(this->begin(), this->size());
-			return *this;
 		}
 
 		polynomial operator+() const noexcept {
@@ -251,12 +242,12 @@ namespace concrete {
 
 	template<::std::uint32_t _p, ::std::uint32_t _g>
 	polynomial<_p, _g> hadamard_product(polynomial<_p, _g> p, const polynomial<_p, _g>& q) noexcept {
-		return p.hadamard_product(q);
+		return polynomial<_p, _g>::hadamard_product(p.begin(), p.size(), q.begin());
 	}
 
 	template<::std::uint32_t _p, ::std::uint32_t _g>
 	polynomial<_p, _g> inverse(polynomial<_p, _g> p) noexcept {
-		return p.inverse();
+		return polynomial<_p, _g>::inverse(p.begin(), p.size());
 	}
 
 }
