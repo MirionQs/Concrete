@@ -121,7 +121,6 @@ namespace concrete {
 		}
 
 		static void multiply(_iter x, ::std::size_t n, _iter y) noexcept {
-			_precomputeRoots(n);
 			fast_fourier_transform(x, n);
 			fast_fourier_transform(y, n);
 			hadamard_product(x, n, y);
