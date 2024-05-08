@@ -131,7 +131,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fast_deque.h" />
+    <ClInclude Include="deque.h" />
     <ClInclude Include="int_p.h" />
     <ClInclude Include="polynomial.h" />
   </ItemGroup>

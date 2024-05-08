@@ -5,16 +5,16 @@
 namespace concrete {
 
 	template<class T>
-	struct fast_deque {
+	struct deque {
 		T* _begin;
 		T* _first;
 		T* _last;
 
-		fast_deque(::std::size_t capacity) noexcept {
+		deque(::std::size_t capacity) noexcept {
 			_begin = _first = _last = new T[capacity];
 		}
 
-		~fast_deque() noexcept {
+		~deque() noexcept {
 			delete[] _begin;
 		}
 
