@@ -22,6 +22,10 @@ namespace concrete {
 			return _first == _last;
 		}
 
+		::std::size_t size() const noexcept {
+			return _last - _first;
+		}
+
 		void clear() noexcept {
 			_first = _last = _begin;
 		}
