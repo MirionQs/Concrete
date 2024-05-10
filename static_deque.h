@@ -1,28 +1,25 @@
 #pragma once
 
-#include <cstddef>
+#include "stdint.h"
 
 namespace concrete {
 
-	template<class T>
-	struct deque {
-		T* _begin;
+	template<class T, size_t size>
+	class static_deque {
+		T _begin[size];
 		T* _first;
 		T* _last;
 
-		deque(::std::size_t capacity) noexcept {
-			_begin = _first = _last = new T[capacity];
-		}
-
-		~deque() noexcept {
-			delete[] _begin;
+	public:
+		static_deque() noexcept {
+			clear();
 		}
 
 		bool empty() const noexcept {
 			return _first == _last;
 		}
 
-		::std::size_t size() const noexcept {
+		size_t size() const noexcept {
 			return _last - _first;
 		}
 
@@ -38,7 +35,7 @@ namespace concrete {
 			return _last;
 		}
 
-		T& operator[](::std::size_t index) const noexcept {
+		T& operator[](size_t index) const noexcept {
 			return _first[index];
 		}
 
@@ -50,16 +47,16 @@ namespace concrete {
 			return _last[-1];
 		}
 
-		void push_front(const T& value) noexcept {
-			*--_first = value;
+		void push_front(const T& _value) noexcept {
+			*--_first = _value;
 		}
 
 		void pop_front() noexcept {
 			++_first;
 		}
 
-		void push_back(const T& value) noexcept {
-			*_last++ = value;
+		void push_back(const T& _value) noexcept {
+			*_last++ = _value;
 		}
 
 		void pop_back() noexcept {

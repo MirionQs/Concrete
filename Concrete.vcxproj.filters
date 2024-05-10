@@ -20,13 +20,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fast_deque.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="int_p.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="polynomial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="deque.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

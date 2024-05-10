@@ -119,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,8 +133,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="deque.h" />
-    <ClInclude Include="int_p.h" />
+    <ClInclude Include="math.h" />
     <ClInclude Include="polynomial.h" />
+    <ClInclude Include="stdint.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "int_p.h"
+#include "math.h"
 
 #include <vector>
 #include <bit>
 
 namespace concrete {
 
-	template<::std::uint32_t _p = 998244353, ::std::uint32_t _g = 3>
-	struct polynomial : public ::std::vector<::concrete::int_p<_p>> {
-		using _parent = ::std::vector<::concrete::int_p<_p>>;
+	template<::std::uint32_t _m = 998244353, ::std::uint32_t _g = 3>
+	struct polynomial : public ::std::vector<int_p<_m>> {
+		using _parent = ::std::vector<int_p<_m>>;
 		using _value = _parent::value_type;
 		using _iter = _parent::iterator;
 		using _citer = _parent::const_iterator;
@@ -23,9 +23,9 @@ namespace concrete {
 			}
 			_roots.resize(n);
 			static constexpr _value gInverse{::concrete::inverse(_value{_g})};
-			::std::uint32_t m{_p >> ::std::countr_zero(oldSize) >> 1};
+			::std::uint32_t m{_m >> ::std::countr_zero(oldSize) >> 1};
 			for (::std::size_t half{oldSize}; half != n; half <<= 1, m >>= 1) {
-				_value r{::concrete::power(gInverse, m)};
+				_value r{power(gInverse, m)};
 				for (::std::size_t i{half}; i != half << 1; i += 2) {
 					_roots[i] = _roots[i >> 1];
 					_roots[i + 1] = r * _roots[i];
@@ -60,7 +60,7 @@ namespace concrete {
 				return;
 			}
 			_precomputeRoots(n);
-			_value nInverse{_p - (_p >> ::std::countr_zero(n))};
+			_value nInverse{_m - (_m >> ::std::countr_zero(n))};
 			for (::std::size_t i{0}; i != n; i += 2) {
 				_value p{x[i]}, q{x[i + 1]};
 				x[i] = (p + q) * nInverse;
@@ -102,7 +102,7 @@ namespace concrete {
 		}
 
 		static void divide(_iter x, ::std::size_t n, _value v) noexcept {
-			_value vInverse{::concrete::inverse(v)};
+			_value vInverse{inverse(v)};
 			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] *= vInverse;
 			}
@@ -224,29 +224,29 @@ namespace concrete {
 		}
 	};
 
-	template<::std::uint32_t _p, ::std::uint32_t _g>
-	polynomial<_p, _g> operator+(::std::uint32_t v, polynomial<_p, _g> p) noexcept {
+	template<::std::uint32_t _m, ::std::uint32_t _g>
+	polynomial<_m, _g> operator+(::std::uint32_t v, polynomial<_m, _g> p) noexcept {
 		return p += v;
 	}
 
-	template<::std::uint32_t _p, ::std::uint32_t _g>
-	polynomial<_p, _g> operator-(::std::uint32_t v, polynomial<_p, _g> p) noexcept {
+	template<::std::uint32_t _m, ::std::uint32_t _g>
+	polynomial<_m, _g> operator-(::std::uint32_t v, polynomial<_m, _g> p) noexcept {
 		return p.negate() -= v;
 	}
 
-	template<::std::uint32_t _p, ::std::uint32_t _g>
-	polynomial<_p, _g> operator*(::std::uint32_t v, polynomial<_p, _g> p) noexcept {
+	template<::std::uint32_t _m, ::std::uint32_t _g>
+	polynomial<_m, _g> operator*(::std::uint32_t v, polynomial<_m, _g> p) noexcept {
 		return p *= v;
 	}
 
-	template<::std::uint32_t _p, ::std::uint32_t _g>
-	polynomial<_p, _g> hadamard_product(polynomial<_p, _g> p, const polynomial<_p, _g>& q) noexcept {
-		return polynomial<_p, _g>::hadamard_product(p.begin(), p.size(), q.begin());
+	template<::std::uint32_t _m, ::std::uint32_t _g>
+	polynomial<_m, _g> hadamard_product(polynomial<_m, _g> p, const polynomial<_m, _g>& q) noexcept {
+		return polynomial<_m, _g>::hadamard_product(p.begin(), p.size(), q.begin());
 	}
 
-	template<::std::uint32_t _p, ::std::uint32_t _g>
-	polynomial<_p, _g> inverse(polynomial<_p, _g> p) noexcept {
-		return polynomial<_p, _g>::inverse(p.begin(), p.size());
+	template<::std::uint32_t _m, ::std::uint32_t _g>
+	polynomial<_m, _g> inverse(polynomial<_m, _g> p) noexcept {
+		return polynomial<_m, _g>::inverse(p.begin(), p.size());
 	}
 
 }
