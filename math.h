@@ -1,189 +1,87 @@
 #pragma once
 
-#include "stdint.h"
+#include "int_p.h"
 
-#include <compare>
+#include <initializer_list>
 
 namespace concrete {
 
-	constexpr bool is_even(::std::integral auto n) {
-		return (n & 1) == 0;
-	}
+	namespace detail {
 
-	constexpr bool is_odd(::std::integral auto n) {
-		return (n & 1) != 0;
-	}
+		namespace is_prime {
 
-	template<uint32_64_t auto _m>
-		requires(is_odd(_m) && _m >> ((sizeof(_m) << 3) - 2) == 0)
-	struct int_p {
-		using value_type = decltype(_m);
-		using _valueTypeDouble = double_size_t<value_type>;
+			using data_type = ::std::initializer_list<uint64_t>;
 
-		static constexpr size_t _valueTypeSize = sizeof(value_type) << 3;
-		static constexpr value_type _mDouble{_m << 1};
-		static constexpr value_type _mInverseNegate{[] {
-			value_type res{1};
-			for (size_t i{0}; i != 6; ++i) {
-				res *= 2 - res * _m;
-			}
-			return ~res + 1;
-		}()};
-		static constexpr value_type _rSquare{(~_valueTypeDouble{_m} + 1) % _m};
+			constexpr data_type _mrBases1{9345883071009581737};
+			constexpr data_type _mrBases2{336781006125, 9639812373923155};
+			constexpr data_type _mrBases3{4230279247111683200, 14694767155120705706, 16641139526367750375};
+			constexpr data_type _mrBases4{2, 141889084524735, 1199124725622454117, 11096072698276303650};
+			constexpr data_type _mrBases5{2, 4130806001517, 149795463772692060, 186635894390467037, 3967304179347715805};
+			constexpr data_type _mrBases6{2, 123635709730000, 9233062284813009, 43835965440333360, 761179012939631437, 1263739024124850375};
+			constexpr data_type _mrBases7{2, 325, 9375, 28178, 450775, 9780504, 1795265022};
 
-		static constexpr value_type _reduce(_valueTypeDouble v) noexcept {
-			return (v + _valueTypeDouble{static_cast<value_type>(v) * _mInverseNegate} *_m) >> _valueTypeSize;
-		}
+			constexpr data_type _mrPrimes1{47, 98207, 2024790248953};
+			constexpr data_type _mrPrimes2{131, 6855593, 1927962474784631};
+			constexpr data_type _mrPrimes3{19, 29, 277, 991, 1931, 14347, 14683, 246557, 3709689913};
+			constexpr data_type _mrPrimes4{11, 23, 127, 56197, 3075593, 322232233, 3721305949};
+			constexpr data_type _mrPrimes5{13, 29, 59, 79, 167, 62633, 299197, 2422837, 332721269, 560937673};
+			constexpr data_type _mrPrimes6{13, 41, 61, 179, 1381, 30839, 157321, 385417, 627838711, 1212379867, 7985344259};
+			constexpr data_type _mrPrimes7{13, 19, 73, 193, 407521, 299210837};
 
-		value_type _value;
+			constexpr data_type miller_rabin_bases[]{_mrBases1, _mrBases2, _mrBases3, _mrBases4, _mrBases5, _mrBases6, _mrBases7};
+			constexpr data_type miller_rabin_primes[]{_mrPrimes1, _mrPrimes2, _mrPrimes3, _mrPrimes4, _mrPrimes5, _mrPrimes6, _mrPrimes7};
+			constexpr data_type miller_rabin_bounds{341531, 1050535501, 350269456337, 55245642489451, 7999252175582851, 585226005592931977};
 
-		constexpr int_p(value_type v = 0) noexcept {
-			_value = _reduce(_valueTypeDouble{v} *_rSquare);
-		}
-
-		explicit constexpr operator value_type() const noexcept {
-			value_type res{_reduce(_value)};
-			value_type t{res - _m};
-			if (t >> (_valueTypeSize - 1) == 0) {
-				res = t;
-			}
-			return res;
-		}
-
-		constexpr ::std::strong_ordering operator<=>(int_p p) const noexcept {
-			return value_type{*this} <=> value_type{p};
-		}
-
-		constexpr int_p& negate() noexcept {
-			if (_value != 0) {
-				_value = _mDouble - _value;
-			}
-			return *this;
-		}
-
-		constexpr int_p& operator+=(int_p p) noexcept {
-			_value += p._value;
-			value_type t{_value - _mDouble};
-			if (t >> (_valueTypeSize - 1) == 0) {
-				_value = t;
-			}
-			return *this;
-		}
-
-		constexpr int_p& operator-=(int_p p) noexcept {
-			_value -= p._value;
-			if (_value >> (_valueTypeSize - 1) != 0) {
-				_value += _mDouble;
-			}
-			return *this;
-		}
-
-		constexpr int_p& operator*=(int_p p) noexcept {
-			_value = _reduce(_valueTypeDouble{_value} *p._value);
-			return *this;
-		}
-
-		constexpr int_p& operator/=(int_p p) noexcept {
-			value_type v{_m - 2};
-			while (v != 0) {
-				if (v & 1) {
-					*this *= p;
+			constexpr bool miller_rabin(uint64_t x, data_type bases) {
+				montgomery<uint64_t> mont(x);
+				uint64_t n{static_cast<size_t>(::std::countr_zero(x - 1))};
+				uint64_t c{(x - 1) >> n};
+				for (uint64_t b : bases) {
+					uint64_t t{mont.power(mont.from(b), c)};
+					if (mont.to(t) != 1) {
+						size_t k{0};
+						while (mont.to(t) != x - 1) {
+							t = mont.multiply(t, t);
+							if (++k == n) {
+								return false;
+							}
+						}
+					}
 				}
-				p *= p;
-				v >>= 1;
+				return true;
 			}
-			return *this;
+
 		}
 
-		constexpr int_p operator+() const noexcept {
-			return *this;
-		}
+	}
 
-		constexpr int_p operator-() const noexcept {
-			return int_p{*this}.negate();
+	constexpr bool is_prime(uint64_t x) noexcept {
+		using namespace detail::is_prime;
+		if (x == 0 || x == 1) {
+			return false;
 		}
-
-		constexpr int_p operator+(int_p p) const noexcept {
-			return int_p{*this} += p;
+		if (x == 2 || x == 3 || x == 5 || x == 7) {
+			return true;
 		}
-
-		constexpr int_p operator-(int_p p) const noexcept {
-			return int_p{*this} -= p;
+		if ((x & 1) == 0 || x % 3 == 0 || x % 5 == 0 || x % 7 == 0) {
+			return false;
 		}
-
-		constexpr int_p operator*(int_p p) const noexcept {
-			return int_p{*this} *= p;
-		}
-
-		constexpr int_p operator/(int_p p) const noexcept {
-			return int_p{*this} /= p;
-		}
-
-		constexpr int_p& operator++() noexcept {
-			++_value;
-			if (_value == _mDouble) {
-				_value = 0;
+		size_t i{0};
+		for (uint64_t b : miller_rabin_bounds) {
+			if (x < b) {
+				break;
 			}
-			return *this;
+			++i;
 		}
-
-		constexpr int_p operator++(int) noexcept {
-			int_p t{*this};
-			++*this;
-			return t;
-		}
-
-		constexpr int_p& operator--() noexcept {
-			if (_value == 0) {
-				_value = _mDouble;
+		for (uint64_t p : miller_rabin_primes[i]) {
+			if (x == p) {
+				return true;
 			}
-			--_value;
-			return *this;
-		}
-
-		constexpr int_p operator--(int) noexcept {
-			int_p t{*this};
-			--*this;
-			return t;
-		}
-	};
-
-	template<uint32_64_t auto _m>
-	constexpr int_p<_m> operator+(decltype(_m) v, int_p<_m> p) noexcept {
-		return int_p<_m>{v} += p;
-	}
-
-	template<uint32_64_t auto _m>
-	constexpr int_p<_m> operator-(decltype(_m) v, int_p<_m> p) noexcept {
-		return int_p<_m>{v} -= p;
-	}
-
-	template<uint32_64_t auto _m>
-	constexpr int_p<_m> operator*(decltype(_m) v, int_p<_m> p) noexcept {
-		return int_p<_m>{v} *= p;
-	}
-
-	template<uint32_64_t auto _m>
-	constexpr int_p<_m> operator/(decltype(_m) v, int_p<_m> p) noexcept {
-		return int_p<_m>{v} /= p;
-	}
-
-	template<uint32_64_t auto _m>
-	constexpr int_p<_m> power(int_p<_m> p, ::std::uint64_t v) noexcept {
-		int_p<_m> res{1};
-		while (v != 0) {
-			if (v & 1) {
-				res *= p;
+			if (x % p == 0) {
+				return false;
 			}
-			p *= p;
-			v >>= 1;
 		}
-		return res;
-	}
-
-	template<uint32_64_t auto _m>
-	constexpr int_p<_m> inverse(int_p<_m> p) noexcept {
-		return power(p, _m - 2);
+		return miller_rabin(x, miller_rabin_bases[i]);
 	}
 
 }
