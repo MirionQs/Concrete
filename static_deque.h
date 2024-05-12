@@ -47,16 +47,16 @@ namespace concrete {
 			return _last[-1];
 		}
 
-		void push_front(const T& _value) noexcept {
-			*--_first = _value;
+		void push_front(const T& value) noexcept {
+			*--_first = value;
 		}
 
 		void pop_front() noexcept {
 			++_first;
 		}
 
-		void push_back(const T& _value) noexcept {
-			*_last++ = _value;
+		void push_back(const T& value) noexcept {
+			*_last++ = value;
 		}
 
 		void pop_back() noexcept {
