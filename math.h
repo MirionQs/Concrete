@@ -55,6 +55,24 @@ namespace concrete {
 
 	}
 
+	constexpr uint64_t power(uint64_t x, uint64_t y) noexcept {
+		if (x == 0) {
+			return y == 0;
+		}
+		if (x == 1) {
+			return 1;
+		}
+		uint64_t res{1};
+		while (y != 0) {
+			if (y & 1) {
+				res *= x;
+			}
+			x *= x;
+			y >>= 1;
+		}
+		return res;
+	}
+
 	constexpr bool is_prime(uint64_t x) noexcept {
 		using namespace detail::is_prime;
 		if (x == 0 || x == 1) {
