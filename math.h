@@ -3,6 +3,7 @@
 #include "int_p.h"
 
 #include <initializer_list>
+#include <cmath>
 
 namespace concrete {
 
@@ -34,12 +35,12 @@ namespace concrete {
 
 			constexpr bool miller_rabin(uint64_t x, data_type bases) {
 				montgomery<uint64_t> mont{x};
-				uint64_t n{static_cast<size_t>(::std::countr_zero(x - 1))};
+				unsigned n{static_cast<unsigned>(::std::countr_zero(x - 1))};
 				uint64_t c{(x - 1) >> n};
 				for (uint64_t b : bases) {
 					uint64_t t{mont.power(mont.from(b), c)};
 					if (mont.to(t) != 1) {
-						size_t k{0};
+						int k{0};
 						while (mont.to(t) != x - 1) {
 							t = mont.multiply(t, t);
 							if (++k == n) {
@@ -53,6 +54,22 @@ namespace concrete {
 
 		}
 
+	}
+
+	constexpr uint64_t square_root(uint64_t x) noexcept {
+		if (::std::is_constant_evaluated()) {
+			if (x == 0 || x == 1) {
+				return x;
+			}
+			unsigned n{32 - (static_cast<unsigned>(::std::countl_zero(x - 1)) >> 1)};
+			uint64_t x0{uint64_t{1} << n}, x1{(x0 + (x >> n)) >> 1};
+			while (x0 > x1) {
+				x0 = x1;
+				x1 = (x0 + x / x0) >> 1;
+			}
+			return x0;
+		}
+		return static_cast<uint64_t>(::std::floor(::std::sqrt(x)) + .5);
 	}
 
 	constexpr uint64_t power(uint64_t x, uint64_t y) noexcept {
@@ -78,6 +95,34 @@ namespace concrete {
 			y >>= 2;
 		}
 		return res;
+	}
+
+	constexpr uint64_t greatest_common_divisor(uint64_t x, uint64_t y) noexcept {
+		if (x == 0) {
+			return y;
+		}
+		if (y == 0) {
+			return x;
+		}
+		unsigned xn{static_cast<unsigned>(::std::countr_zero(x))};
+		unsigned yn{static_cast<unsigned>(::std::countr_zero(y))};
+		unsigned n{::std::min(xn, yn)};
+		x >>= xn;
+		y >>= yn;
+		while (true) {
+			if (x > y) {
+				::std::swap(x, y);
+			}
+			y -= x;
+			if (y == 0) {
+				return x << n;
+			}
+			y >>= ::std::countr_zero(y);
+		}
+	}
+
+	constexpr uint64_t least_common_multiple(uint64_t x, uint64_t y) noexcept {
+		return x / greatest_common_divisor(x, y) * y;
 	}
 
 	constexpr bool is_prime(uint64_t x) noexcept {
