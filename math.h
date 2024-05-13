@@ -33,7 +33,7 @@ namespace concrete {
 			constexpr data_type miller_rabin_bounds{341531, 1050535501, 350269456337, 55245642489451, 7999252175582851, 585226005592931977};
 
 			constexpr bool miller_rabin(uint64_t x, data_type bases) {
-				montgomery<uint64_t> mont(x);
+				montgomery<uint64_t> mont{x};
 				uint64_t n{static_cast<size_t>(::std::countr_zero(x - 1))};
 				uint64_t c{(x - 1) >> n};
 				for (uint64_t b : bases) {

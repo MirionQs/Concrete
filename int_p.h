@@ -108,7 +108,7 @@ namespace concrete {
 	explicit montgomery(T)->montgomery<::std::make_unsigned_t<T>>;
 
 	template<::std::unsigned_integral auto m>
-		requires((m & 1) == 1 && m >> (sizeof(m) * 8 - 2) == 0)
+		requires(m % 2 != 0 && m >> (sizeof(m) * 8 - 2) == 0)
 	class int_p {
 	public:
 		using value_type = decltype(m);
@@ -132,13 +132,8 @@ namespace concrete {
 			return _mont;
 		}
 
-		constexpr value_type raw() const noexcept {
+		constexpr value_type& raw() noexcept {
 			return _value;
-		}
-
-		constexpr int_p& set_raw(value_type xR) noexcept {
-			_value = xR;
-			return *this;
 		}
 
 		constexpr ::std::strong_ordering operator<=>(int_p p) const noexcept {
@@ -146,23 +141,28 @@ namespace concrete {
 		}
 
 		constexpr int_p& negate() noexcept {
-			return set_raw(_mont.negate(_value));
+			_value = _mont.negate(_value);
+			return *this;
 		}
 
 		constexpr int_p& operator+=(int_p p) noexcept {
-			return set_raw(_mont.add(_value, p._value));
+			_value = _mont.add(_value, p._value);
+			return *this;
 		}
 
 		constexpr int_p& operator-=(int_p p) noexcept {
-			return set_raw(_mont.subtract(_value, p._value));
+			_value = _mont.subtract(_value, p._value);
+			return *this;
 		}
 
 		constexpr int_p& operator*=(int_p p) noexcept {
-			return set_raw(_mont.multiply(_value, p._value));
+			_value = _mont.multiply(_value, p._value);
+			return *this;
 		}
 
 		constexpr int_p& operator/=(int_p p) noexcept {
-			return set_raw(_mont.divide(_value, p._value));
+			_value = _mont.divide(_value, p._value);
+			return *this;
 		}
 
 		constexpr int_p operator+() const noexcept {
@@ -212,12 +212,14 @@ namespace concrete {
 
 	template<auto m>
 	constexpr int_p<m> power(int_p<m> p, typename int_p<m>::value_type v) noexcept {
-		return p.set_raw(p.montgomery().power(p.raw(), v));
+		p.raw() = p.montgomery().power(p.raw(), v);
+		return p;
 	}
 
 	template<auto m>
 	constexpr int_p<m> inverse(int_p<m> p) noexcept {
-		return p.set_raw(p.montgomery().inverse(p.raw()));
+		p.raw() = p.montgomery().inverse(p.raw());
+		return p;
 	}
 
 }
