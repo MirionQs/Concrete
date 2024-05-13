@@ -64,11 +64,18 @@ namespace concrete {
 		}
 		uint64_t res{1};
 		while (y != 0) {
-			if (y & 1) {
+			uint64_t x2{x * x}, x3{x2 * x};
+			if ((y & 3) == 1) {
 				res *= x;
 			}
-			x *= x;
-			y >>= 1;
+			else if ((y & 3) == 2) {
+				res *= x2;
+			}
+			else if ((y & 3) == 3) {
+				res *= x3;
+			}
+			x *= x3;
+			y >>= 2;
 		}
 		return res;
 	}

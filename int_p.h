@@ -32,17 +32,6 @@ namespace concrete {
 			return value_type{(x + _doubleValueType{static_cast<value_type>(x) * _mInverseNegate} *_m) >> s};
 		}
 
-		constexpr value_type _power(value_type xR, value_type y, value_type zR) const noexcept {
-			while (y != 0) {
-				if (y & 1) {
-					zR = multiply(zR, xR);
-				}
-				xR = multiply(xR, xR);
-				y >>= 1;
-			}
-			return zR;
-		}
-
 	public:
 		explicit constexpr montgomery(value_type m) noexcept :
 			_m{m},
@@ -92,15 +81,26 @@ namespace concrete {
 		}
 
 		constexpr value_type divide(value_type xR, value_type yR) const noexcept {
-			return _power(yR, _m - 2, xR);
+			return power_multiply(yR, _m - 2, xR);
+		}
+
+		constexpr value_type power_multiply(value_type xR, value_type y, value_type zR) const noexcept {
+			while (y != 0) {
+				if (y & 1) {
+					zR = multiply(zR, xR);
+				}
+				xR = multiply(xR, xR);
+				y >>= 1;
+			}
+			return zR;
 		}
 
 		constexpr value_type power(value_type xR, value_type y) const noexcept {
-			return _power(xR, y, _r);
+			return power_multiply(xR, y, _r);
 		}
 
 		constexpr value_type inverse(value_type xR) const noexcept {
-			return power(xR, _m - 2);
+			return power_multiply(xR, _m - 2, _r);
 		}
 	};
 
