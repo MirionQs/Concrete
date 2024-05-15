@@ -40,7 +40,7 @@ namespace concrete {
 				for (uint64_t b : bases) {
 					uint64_t t{mont.power(mont.from(b), c)};
 					if (mont.to(t) != 1) {
-						int k{0};
+						unsigned k{0};
 						while (mont.to(t) != x - 1) {
 							t = mont.multiply(t, t);
 							if (++k == n) {
@@ -58,7 +58,7 @@ namespace concrete {
 
 	constexpr uint64_t square_root(uint64_t x) noexcept {
 		if (::std::is_constant_evaluated()) {
-			if (x == 0 || x == 1) {
+			if (x == 0) {
 				return x;
 			}
 			unsigned n{32 - (static_cast<unsigned>(::std::countl_zero(x - 1)) >> 1)};
@@ -106,23 +106,59 @@ namespace concrete {
 		}
 		unsigned xn{static_cast<unsigned>(::std::countr_zero(x))};
 		unsigned yn{static_cast<unsigned>(::std::countr_zero(y))};
-		unsigned n{::std::min(xn, yn)};
 		x >>= xn;
 		y >>= yn;
 		while (true) {
-			if (x > y) {
+			if (x < y) {
 				::std::swap(x, y);
 			}
-			y -= x;
-			if (y == 0) {
-				return x << n;
+			x -= y;
+			if (x == 0) {
+				return y << ::std::min(xn, yn);
 			}
-			y >>= ::std::countr_zero(y);
+			x >>= ::std::countr_zero(x);
 		}
 	}
 
 	constexpr uint64_t least_common_multiple(uint64_t x, uint64_t y) noexcept {
 		return x / greatest_common_divisor(x, y) * y;
+	}
+
+	constexpr int kronecker_symbol(uint64_t x, uint64_t y) noexcept {
+		if (x == 0) {
+			return y == 1;
+		}
+		if (y == 0) {
+			return x == 1;
+		}
+		if (((x | y) & 1) == 0) {
+			return 0;
+		}
+		unsigned xn, yn;
+		bool m{true};
+		if ((x & 1) == 0) {
+			xn = static_cast<unsigned>(::std::countr_zero(x));
+			m = (xn & 1) == 0 || (y & 7) == 1 || (y & 7) == 7;
+			x >>= xn;
+		}
+		else if ((y & 1) == 0) {
+			yn = static_cast<unsigned>(::std::countr_zero(y));
+			m = (yn & 1) == 0 || (x & 7) == 1 || (x & 7) == 7;
+			y >>= yn;
+		}
+		while (true) {
+			if (x < y) {
+				::std::swap(x, y);
+				m = m == ((x & y & 2) == 0);
+			}
+			x -= y;
+			if (x == 0) {
+				return y != 1 ? 0 : m ? 1 : -1;
+			}
+			xn = static_cast<unsigned>(::std::countr_zero(x));
+			m = m == ((xn & 1) == 0 || (y & 7) == 1 || (y & 7) == 7);
+			x >>= xn;
+		}
 	}
 
 	constexpr bool is_prime(uint64_t x) noexcept {
