@@ -33,25 +33,6 @@ namespace concrete {
 			constexpr data_type miller_rabin_primes[]{_mrPrimes1, _mrPrimes2, _mrPrimes3, _mrPrimes4, _mrPrimes5, _mrPrimes6, _mrPrimes7};
 			constexpr data_type miller_rabin_bounds{341531, 1050535501, 350269456337, 55245642489451, 7999252175582851, 585226005592931977};
 
-			constexpr bool miller_rabin(uint64_t x, data_type bases) {
-				montgomery<uint64_t> mont{x};
-				unsigned n{static_cast<unsigned>(::std::countr_zero(x - 1))};
-				uint64_t c{(x - 1) >> n};
-				for (uint64_t b : bases) {
-					uint64_t t{mont.power(mont.from(b), c)};
-					if (mont.to(t) != 1) {
-						unsigned k{0};
-						while (mont.to(t) != x - 1) {
-							t = mont.multiply(t, t);
-							if (++k == n) {
-								return false;
-							}
-						}
-					}
-				}
-				return true;
-			}
-
 		}
 
 	}
@@ -187,7 +168,22 @@ namespace concrete {
 				return false;
 			}
 		}
-		return miller_rabin(x, miller_rabin_bases[i]);
+		montgomery mont{x};
+		unsigned n{static_cast<unsigned>(::std::countr_zero(x - 1))};
+		uint64_t c{(x - 1) >> n};
+		for (uint64_t b : miller_rabin_bases[i]) {
+			uint64_t t{mont.power(mont.from(b), c)};
+			if (mont.to(t) != 1) {
+				unsigned k{0};
+				while (mont.to(t) != x - 1) {
+					t = mont.multiply(t, t);
+					if (++k == n) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 }
