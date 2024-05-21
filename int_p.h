@@ -107,11 +107,11 @@ namespace concrete {
 	template<class T>
 	explicit montgomery(T)->montgomery<::std::make_unsigned_t<T>>;
 
-	template<::std::unsigned_integral auto m>
+	template<::std::integral auto m>
 		requires(m % 2 != 0 && m >> (sizeof(m) * 8 - 2) == 0)
 	class int_p {
 	public:
-		using value_type = decltype(m);
+		using value_type = ::std::make_unsigned_t<decltype(m)>;
 		using montgomery_type = ::concrete::montgomery<value_type>;
 
 	private:
