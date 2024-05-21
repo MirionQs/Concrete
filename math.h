@@ -172,7 +172,7 @@ namespace concrete {
 		unsigned n{static_cast<unsigned>(::std::countr_zero(x - 1))};
 		uint64_t c{(x - 1) >> n};
 		for (uint64_t b : miller_rabin_bases[i]) {
-			uint64_t t{mont.power(mont.from(b), c)};
+			uint64_t t{mont.power(mont(b), c)};
 			if (mont.to(t) != 1) {
 				unsigned k{0};
 				while (mont.to(t) != x - 1) {
