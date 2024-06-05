@@ -1,35 +1,31 @@
 #pragma once
 
-#include "stdint.h"
+#include "integer.h"
 
-#include <concepts>
-#include <compare>
 #include <bit>
 
 namespace concrete {
 
-	template<::std::unsigned_integral T>
+	template<::concrete::integral T>
 	class montgomery {
 	public:
-		using value_type = T;
+		using value_type = ::concrete::make_unsigned_t<T>;
 
 	private:
-		using _doubleValueType = double_size_t<value_type>;
+		using _doubleType = ::concrete::unsigned_integer_t<sizeof(value_type) * 2>;
 
 		const value_type _m, _mDouble, _mInverseNegate, _r, _rSquare;
 
 		constexpr value_type _inverse(value_type m) const noexcept {
-			constexpr size_t s{::std::countr_zero(sizeof(value_type) * 8)};
 			value_type res{1};
-			for (size_t i{0}; i != s; ++i) {
+			for (std::size_t i{0}; i != ::std::countr_zero(sizeof(value_type) * 8); ++i) {
 				res *= 2 - res * m;
 			}
 			return res;
 		}
 
-		constexpr value_type _reduce(_doubleValueType x) const noexcept {
-			constexpr size_t s{sizeof(value_type) * 8};
-			return value_type{(x + _doubleValueType{static_cast<value_type>(x) * _mInverseNegate} *_m) >> s};
+		constexpr value_type _reduce(_doubleType x) const noexcept {
+			return value_type{(x + _doubleType{static_cast<value_type>(x) * _mInverseNegate} *_m) >> sizeof(value_type) * 8};
 		}
 
 	public:
@@ -38,21 +34,20 @@ namespace concrete {
 			_mDouble{m << 1},
 			_mInverseNegate{~_inverse(m) + 1},
 			_r{(~value_type{m} + 1) % m},
-			_rSquare{(~_doubleValueType{m} + 1) % m} {}
+			_rSquare{(~_doubleType{m} + 1) % m} {}
 
 		constexpr value_type modulo() const noexcept {
 			return _m;
 		}
 
 		constexpr value_type operator()(value_type x) const noexcept {
-			return _reduce(_doubleValueType{x} *_rSquare);
+			return _reduce(_doubleType{x} *_rSquare);
 		}
 
 		constexpr value_type to(value_type xR) const noexcept {
-			constexpr size_t s{sizeof(value_type) * 8 - 1};
 			value_type res{_reduce(xR)};
 			value_type t{res - _m};
-			return t >> s == 0 ? t : res;
+			return t >> (sizeof(value_type) * 8 - 1) == 0 ? t : res;
 		}
 
 		constexpr ::std::strong_ordering compare(value_type xR, value_type yR) const noexcept {
@@ -64,20 +59,18 @@ namespace concrete {
 		}
 
 		constexpr value_type add(value_type xR, value_type yR) const noexcept {
-			constexpr size_t s{sizeof(value_type) * 8 - 1};
 			xR += yR;
 			value_type t{xR - _mDouble};
-			return t >> s == 0 ? t : xR;
+			return t >> (sizeof(value_type) * 8 - 1) == 0 ? t : xR;
 		}
 
 		constexpr value_type subtract(value_type xR, value_type yR) const noexcept {
-			constexpr size_t s{sizeof(value_type) * 8 - 1};
 			xR -= yR;
-			return xR >> s == 0 ? xR : xR + _mDouble;
+			return xR >> (sizeof(value_type) * 8 - 1) == 0 ? xR : xR + _mDouble;
 		}
 
 		constexpr value_type multiply(value_type xR, value_type yR) const noexcept {
-			return _reduce(_doubleValueType{xR} *yR);
+			return _reduce(_doubleType{xR} *yR);
 		}
 
 		constexpr value_type divide(value_type xR, value_type yR) const noexcept {
@@ -105,9 +98,9 @@ namespace concrete {
 	};
 
 	template<class T>
-	explicit montgomery(T)->montgomery<::std::make_unsigned_t<T>>;
+	explicit montgomery(T)->montgomery<T>;
 
-	template<::std::integral auto m>
+	template<::concrete::integral auto m>
 		requires(m % 2 != 0 && m >> (sizeof(m) * 8 - 2) == 0)
 	class int_p {
 	public:

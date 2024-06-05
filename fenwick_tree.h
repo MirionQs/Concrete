@@ -11,35 +11,35 @@ namespace concrete {
 
 		static constexpr binary_operator _op{};
 
-		T& _at(size_t index) noexcept {
+		T& _at(::std::size_t index) noexcept {
 			return base::operator[](index);
 		}
 
 	public:
-		explicit fenwick_tree_pr(size_t size) noexcept : base(size) {}
+		explicit fenwick_tree_pr(::std::size_t size) noexcept : base(size) {}
 
 		template <::std::input_iterator iter>
 		explicit fenwick_tree_pr(iter first, iter last) noexcept : base(first, last) {
-			size_t size{this->size()};
-			for (size_t i{0}; i != size; ++i) {
-				size_t j{i | i + 1};
+			::std::size_t size{this->size()};
+			for (::std::size_t i{0}; i != size; ++i) {
+				::std::size_t j{i | i + 1};
 				if (j < size) {
 					_at(j) = _op(_at(j), _at(i));
 				}
 			}
 		}
 
-		void apply(size_t index, const T& value) noexcept {
-			size_t size{this->size()};
+		void apply(::std::size_t index, const T& value) noexcept {
+			::std::size_t size{this->size()};
 			while (index < size) {
 				_at(index) = _op(_at(index), value);
 				index |= index + 1;
 			}
 		}
 
-		T operator[](size_t index) noexcept {
+		T operator[](::std::size_t index) noexcept {
 			T res{};
-			size_t size{this->size()};
+			::std::size_t size{this->size()};
 			while (index < size) {
 				res = _op(res, _at(index));
 				index &= index + 1;
@@ -60,7 +60,7 @@ namespace concrete {
 		template <::std::input_iterator iter>
 		static base _construct(iter first, iter last) {
 			::std::vector<T> diff(first, last);
-			for (size_t i{diff.size() - 1}; i != 0; --i) {
+			for (::std::size_t i{diff.size() - 1}; i != 0; --i) {
 				diff[i] = _invOp(diff[i], diff[i - 1]);
 			}
 			return base{diff.begin(), diff.end()};
@@ -69,12 +69,12 @@ namespace concrete {
 	public:
 		using base::operator[];
 
-		explicit fenwick_tree_rp(size_t size) noexcept : base{size} {}
+		explicit fenwick_tree_rp(::std::size_t size) noexcept : base{size} {}
 
 		template <::std::input_iterator iter>
 		explicit fenwick_tree_rp(iter first, iter last) noexcept : base{::std::move(_construct(first, last))} {}
 
-		void apply(size_t first, size_t last, const T& value) noexcept {
+		void apply(::std::size_t first, ::std::size_t last, const T& value) noexcept {
 			base::apply(first, value);
 			base::apply(last, _inv(value));
 		}

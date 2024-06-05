@@ -133,10 +133,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="math.h" />
+    <ClInclude Include="mathematics.h" />
     <ClInclude Include="int_p.h" />
     <ClInclude Include="polynomial.h" />
-    <ClInclude Include="stdint.h" />
+    <ClInclude Include="integer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />

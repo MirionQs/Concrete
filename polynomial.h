@@ -6,8 +6,8 @@
 
 namespace concrete {
 
-	template<uint32_t m, uint32_t g>
-	class polynomial : public ::std::vector<int_p<m>> {
+	template<::concrete::uint32_t m, ::concrete::uint32_t g>
+	class polynomial : public ::std::vector<::concrete::int_p<m>> {
 	public:
 		using value_type = ::std::vector<int_p<m>>::value_type;
 		using iterator = ::std::vector<int_p<m>>::iterator;
@@ -16,17 +16,17 @@ namespace concrete {
 	private:
 		static inline ::std::vector<value_type> _roots{1, 1};
 
-		static void _precomputeRoots(size_t n) noexcept {
+		static void _precomputeRoots(::std::size_t n) noexcept {
 			static constexpr value_type gInverse{::concrete::inverse(value_type{g})};
-			size_t oldSize{_roots.size()};
+			::std::size_t oldSize{_roots.size()};
 			if (n <= oldSize) {
 				return;
 			}
 			_roots.resize(n);
-			uint32_t t{m >> ::std::countr_zero(oldSize) >> 1};
-			for (size_t half{oldSize}; half != n; half <<= 1, t >>= 1) {
+			::concrete::uint32_t t{m >> ::std::countr_zero(oldSize) >> 1};
+			for (::std::size_t half{oldSize}; half != n; half <<= 1, t >>= 1) {
 				value_type r{power(gInverse, t)};
-				for (size_t i{half}; i != half << 1; i += 2) {
+				for (::std::size_t i{half}; i != half << 1; i += 2) {
 					_roots[i] = _roots[i >> 1];
 					_roots[i + 1] = r * _roots[i];
 				}
@@ -34,46 +34,46 @@ namespace concrete {
 		}
 
 	public:
-		static void fast_fourier_transform(iterator x, size_t n) noexcept {
+		static void fast_fourier_transform(iterator x, ::std::size_t n) noexcept {
 			if (n == 1) {
 				return;
 			}
 			_precomputeRoots(n);
-			for (size_t half{n >> 1}; half != 1; half >>= 1) {
-				for (size_t i{0}; i != n; i += half << 1) {
+			for (::std::size_t half{n >> 1}; half != 1; half >>= 1) {
+				for (::std::size_t i{0}; i != n; i += half << 1) {
 					auto r{_roots.begin() + half};
-					for (size_t j{i}; j != i + half; ++j) {
+					for (::std::size_t j{i}; j != i + half; ++j) {
 						value_type p{x[j]}, q{x[j + half]};
 						x[j] = p + q;
 						x[j + half] = (p - q) * *r++;
 					}
 				}
 			}
-			for (size_t i{0}; i != n; i += 2) {
+			for (::std::size_t i{0}; i != n; i += 2) {
 				value_type p{x[i]}, q{x[i + 1]};
 				x[i] = p + q;
 				x[i + 1] = p - q;
 			}
 		}
 
-		static void inverse_fast_fourier_transform(iterator x, size_t n) noexcept {
+		static void inverse_fast_fourier_transform(iterator x, ::std::size_t n) noexcept {
 			if (n == 1) {
 				return;
 			}
 			_precomputeRoots(n);
 			value_type nInverse{m - (m >> ::std::countr_zero(n))};
-			for (size_t i{0}; i != n; i += 2) {
+			for (::std::size_t i{0}; i != n; i += 2) {
 				value_type p{x[i]}, q{x[i + 1]};
 				x[i] = (p + q) * nInverse;
 				x[i + 1] = (p - q) * nInverse;
 			}
-			for (size_t half{2}; half != n; half <<= 1) {
-				for (size_t i{0}; i != n; i += half << 1) {
+			for (::std::size_t half{2}; half != n; half <<= 1) {
+				for (::std::size_t i{0}; i != n; i += half << 1) {
 					value_type p{x[i]}, q{x[i + half]};
 					x[i] = p + q;
 					x[i + half] = p - q;
 					auto r{_roots.begin() + (half << 1)};
-					for (size_t j{i + 1}; j != i + half; ++j) {
+					for (::std::size_t j{i + 1}; j != i + half; ++j) {
 						value_type p{x[j]}, q{x[j + half] * *--r};
 						x[j] = p - q;
 						x[j + half] = p + q;
@@ -82,59 +82,59 @@ namespace concrete {
 			}
 		}
 
-		static void negate(iterator x, size_t n) noexcept {
-			for (size_t i{0}; i != n; ++i) {
+		static void negate(iterator x, ::std::size_t n) noexcept {
+			for (::std::size_t i{0}; i != n; ++i) {
 				x[i].negate();
 			}
 		}
 
-		static void add(iterator x, size_t n, value_type v) noexcept {
+		static void add(iterator x, ::std::size_t n, value_type v) noexcept {
 			x[0] += v;
 		}
 
-		static void subtract(iterator x, size_t n, value_type v) noexcept {
+		static void subtract(iterator x, ::std::size_t n, value_type v) noexcept {
 			x[0] -= v;
 		}
 
-		static void multiply(iterator x, size_t n, value_type v) noexcept {
-			for (size_t i{0}; i != n; ++i) {
+		static void multiply(iterator x, ::std::size_t n, value_type v) noexcept {
+			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] *= v;
 			}
 		}
 
-		static void divide(iterator x, size_t n, value_type v) noexcept {
+		static void divide(iterator x, ::std::size_t n, value_type v) noexcept {
 			value_type vInverse{inverse(v)};
-			for (size_t i{0}; i != n; ++i) {
+			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] *= vInverse;
 			}
 		}
 
-		static void add(iterator x, size_t n, const_iterator y) noexcept {
-			for (size_t i{0}; i != n; ++i) {
+		static void add(iterator x, ::std::size_t n, const_iterator y) noexcept {
+			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] += y[i];
 			}
 		}
 
-		static void subtract(iterator x, size_t n, const_iterator y) noexcept {
-			for (size_t i{0}; i != n; ++i) {
+		static void subtract(iterator x, ::std::size_t n, const_iterator y) noexcept {
+			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] -= y[i];
 			}
 		}
 
-		static void multiply(iterator x, size_t n, iterator y) noexcept {
+		static void multiply(iterator x, ::std::size_t n, iterator y) noexcept {
 			fast_fourier_transform(x, n);
 			fast_fourier_transform(y, n);
 			hadamard_product(x, n, y);
 			inverse_fast_fourier_transform(x, n);
 		}
 
-		static void hadamard_product(iterator x, size_t n, const_iterator y) noexcept {
-			for (size_t i{0}; i != n; ++i) {
+		static void hadamard_product(iterator x, ::std::size_t n, const_iterator y) noexcept {
+			for (::std::size_t i{0}; i != n; ++i) {
 				x[i] *= y[i];
 			}
 		}
 
-		static void inverse(iterator x, size_t n) noexcept {
+		static void inverse(iterator x, ::std::size_t n) noexcept {
 
 		}
 
@@ -145,22 +145,22 @@ namespace concrete {
 			return *this;
 		}
 
-		polynomial& operator+=(uint32_t v) noexcept {
+		polynomial& operator+=(::concrete::uint32_t v) noexcept {
 			add(this->begin(), this->size(), v);
 			return *this;
 		}
 
-		polynomial& operator-=(uint32_t v) noexcept {
+		polynomial& operator-=(::concrete::uint32_t v) noexcept {
 			subtract(this->begin(), this->size(), v);
 			return *this;
 		}
 
-		polynomial& operator*=(uint32_t v) noexcept {
+		polynomial& operator*=(::concrete::uint32_t v) noexcept {
 			multiply(this->begin(), this->size(), v);
 			return *this;
 		}
 
-		polynomial& operator/=(uint32_t v) noexcept {
+		polynomial& operator/=(::concrete::uint32_t v) noexcept {
 			divide(this->begin(), this->size(), v);
 			return *this;
 		}
@@ -192,19 +192,19 @@ namespace concrete {
 			return polynomial{*this}.negate();
 		}
 
-		polynomial operator+(uint32_t v) const noexcept {
+		polynomial operator+(::concrete::uint32_t v) const noexcept {
 			return polynomial{*this} += v;
 		}
 
-		polynomial operator-(uint32_t v) const noexcept {
+		polynomial operator-(::concrete::uint32_t v) const noexcept {
 			return polynomial{*this} -= v;
 		}
 
-		polynomial operator*(uint32_t v) const noexcept {
+		polynomial operator*(::concrete::uint32_t v) const noexcept {
 			return polynomial{*this} *= v;
 		}
 
-		polynomial operator/(uint32_t v) const noexcept {
+		polynomial operator/(::concrete::uint32_t v) const noexcept {
 			return polynomial{*this} /= v;
 		}
 
@@ -226,17 +226,17 @@ namespace concrete {
 	};
 
 	template<auto m, auto g>
-	polynomial<m, g> operator+(uint32_t v, polynomial<m, g> p) noexcept {
+	polynomial<m, g> operator+(::concrete::uint32_t v, polynomial<m, g> p) noexcept {
 		return p += v;
 	}
 
 	template<auto m, auto g>
-	polynomial<m, g> operator-(uint32_t v, polynomial<m, g> p) noexcept {
+	polynomial<m, g> operator-(::concrete::uint32_t v, polynomial<m, g> p) noexcept {
 		return p.negate() -= v;
 	}
 
 	template<auto m, auto g>
-	polynomial<m, g> operator*(uint32_t v, polynomial<m, g> p) noexcept {
+	polynomial<m, g> operator*(::concrete::uint32_t v, polynomial<m, g> p) noexcept {
 		return p *= v;
 	}
 

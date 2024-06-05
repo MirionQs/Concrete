@@ -29,10 +29,10 @@
     <ClInclude Include="int_p.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdint.h">
+    <ClInclude Include="integer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="math.h">
+    <ClInclude Include="mathematics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
