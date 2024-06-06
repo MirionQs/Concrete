@@ -134,7 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mathematics.h" />
-    <ClInclude Include="int_p.h" />
+    <ClInclude Include="int_mod.h" />
     <ClInclude Include="polynomial.h" />
     <ClInclude Include="integer.h" />
   </ItemGroup>

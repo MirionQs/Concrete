@@ -1,17 +1,17 @@
 #pragma once
 
-#include "int_p.h"
+#include "int_mod.h"
 
 #include <vector>
 
 namespace concrete {
 
 	template<::concrete::uint32_t m, ::concrete::uint32_t g>
-	class polynomial : public ::std::vector<::concrete::int_p<m>> {
+	class polynomial : public ::std::vector<::concrete::int_mod<m>> {
 	public:
-		using value_type = ::std::vector<int_p<m>>::value_type;
-		using iterator = ::std::vector<int_p<m>>::iterator;
-		using const_iterator = ::std::vector<int_p<m>>::const_iterator;
+		using value_type = ::std::vector<int_mod<m>>::value_type;
+		using iterator = ::std::vector<int_mod<m>>::iterator;
+		using const_iterator = ::std::vector<int_mod<m>>::const_iterator;
 
 	private:
 		static inline ::std::vector<value_type> _roots{1, 1};

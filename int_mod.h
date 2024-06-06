@@ -102,9 +102,9 @@ namespace concrete {
 
 	template<::concrete::integral auto m>
 		requires(m % 2 != 0 && m >> (sizeof(m) * 8 - 2) == 0)
-	class int_p {
+	class int_mod {
 	public:
-		using value_type = ::std::make_unsigned_t<decltype(m)>;
+		using value_type = ::concrete::make_unsigned_t<decltype(m)>;
 		using montgomery_type = ::concrete::montgomery<value_type>;
 
 	private:
@@ -113,7 +113,7 @@ namespace concrete {
 		value_type _value;
 
 	public:
-		constexpr int_p(value_type v = 0) noexcept {
+		constexpr int_mod(value_type v = 0) noexcept {
 			_value = _mont(v);
 		}
 
@@ -125,94 +125,98 @@ namespace concrete {
 			return _mont;
 		}
 
-		constexpr value_type& raw() noexcept {
+		constexpr value_type raw() const noexcept {
 			return _value;
 		}
 
-		constexpr ::std::strong_ordering operator<=>(int_p p) const noexcept {
-			return _mont.compare(_value, p._value);
+		constexpr void raw(value_type v) noexcept {
+			_value = v;
 		}
 
-		constexpr int_p& negate() noexcept {
+		constexpr ::std::strong_ordering operator<=>(int_mod x) const noexcept {
+			return _mont.compare(_value, x._value);
+		}
+
+		constexpr int_mod& negate() noexcept {
 			_value = _mont.negate(_value);
 			return *this;
 		}
 
-		constexpr int_p& operator+=(int_p p) noexcept {
-			_value = _mont.add(_value, p._value);
+		constexpr int_mod& operator+=(int_mod x) noexcept {
+			_value = _mont.add(_value, x._value);
 			return *this;
 		}
 
-		constexpr int_p& operator-=(int_p p) noexcept {
-			_value = _mont.subtract(_value, p._value);
+		constexpr int_mod& operator-=(int_mod x) noexcept {
+			_value = _mont.subtract(_value, x._value);
 			return *this;
 		}
 
-		constexpr int_p& operator*=(int_p p) noexcept {
-			_value = _mont.multiply(_value, p._value);
+		constexpr int_mod& operator*=(int_mod x) noexcept {
+			_value = _mont.multiply(_value, x._value);
 			return *this;
 		}
 
-		constexpr int_p& operator/=(int_p p) noexcept {
-			_value = _mont.divide(_value, p._value);
+		constexpr int_mod& operator/=(int_mod x) noexcept {
+			_value = _mont.divide(_value, x._value);
 			return *this;
 		}
 
-		constexpr int_p operator+() const noexcept {
+		constexpr int_mod operator+() const noexcept {
 			return *this;
 		}
 
-		constexpr int_p operator-() const noexcept {
-			return int_p{*this}.negate();
+		constexpr int_mod operator-() const noexcept {
+			return int_mod{*this}.negate();
 		}
 
-		constexpr int_p operator+(int_p p) const noexcept {
-			return int_p{*this} += p;
+		constexpr int_mod operator+(int_mod x) const noexcept {
+			return int_mod{*this} += x;
 		}
 
-		constexpr int_p operator-(int_p p) const noexcept {
-			return int_p{*this} -= p;
+		constexpr int_mod operator-(int_mod x) const noexcept {
+			return int_mod{*this} -= x;
 		}
 
-		constexpr int_p operator*(int_p p) const noexcept {
-			return int_p{*this} *= p;
+		constexpr int_mod operator*(int_mod x) const noexcept {
+			return int_mod{*this} *= x;
 		}
 
-		constexpr int_p operator/(int_p p) const noexcept {
-			return int_p{*this} /= p;
+		constexpr int_mod operator/(int_mod x) const noexcept {
+			return int_mod{*this} /= x;
 		}
 	};
 
 	template<auto m>
-	constexpr int_p<m> operator+(typename int_p<m>::value_type v, int_p<m> p) noexcept {
-		return int_p<m>{v} += p;
+	constexpr int_mod<m> operator+(typename int_mod<m>::value_type v, int_mod<m> x) noexcept {
+		return int_mod<m>{v} += x;
 	}
 
 	template<auto m>
-	constexpr int_p<m> operator-(typename int_p<m>::value_type v, int_p<m> p) noexcept {
-		return int_p<m>{v} -= p;
+	constexpr int_mod<m> operator-(typename int_mod<m>::value_type v, int_mod<m> x) noexcept {
+		return int_mod<m>{v} -= x;
 	}
 
 	template<auto m>
-	constexpr int_p<m> operator*(typename int_p<m>::value_type v, int_p<m> p) noexcept {
-		return int_p<m>{v} *= p;
+	constexpr int_mod<m> operator*(typename int_mod<m>::value_type v, int_mod<m> x) noexcept {
+		return int_mod<m>{v} *= x;
 	}
 
 	template<auto m>
-	constexpr int_p<m> operator/(typename int_p<m>::value_type v, int_p<m> p) noexcept {
-		return int_p<m>{v} /= p;
+	constexpr int_mod<m> operator/(typename int_mod<m>::value_type v, int_mod<m> x) noexcept {
+		return int_mod<m>{v} /= x;
 	}
 
 	template<auto m>
-	constexpr int_p<m> power(int_p<m> p, typename int_p<m>::value_type v) noexcept {
-		p.raw() = p.montgomery().power(p.raw(), v);
-		return p;
+	constexpr int_mod<m> power(int_mod<m> x, typename int_mod<m>::value_type v) noexcept {
+		x.raw(x.montgomery().power(x.raw(), v));
+		return x;
 	}
 
 	template<auto m>
-	constexpr int_p<m> inverse(int_p<m> p) noexcept {
-		p.raw() = p.montgomery().inverse(p.raw());
-		return p;
+	constexpr int_mod<m> inverse(int_mod<m> x) noexcept {
+		x.raw(x.montgomery().inverse(x.raw()));
+		return x;
 	}
 
 }

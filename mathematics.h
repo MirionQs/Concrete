@@ -1,6 +1,6 @@
 #pragma once
 
-#include "int_p.h"
+#include "int_mod.h"
 
 #include <initializer_list>
 #include <cmath>
