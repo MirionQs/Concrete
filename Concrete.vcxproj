@@ -131,9 +131,10 @@
   <ItemGroup>
     <ClCompile Include="fenwick_tree.h" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mathematics.h" />
+    <ClInclude Include="math.h" />
     <ClInclude Include="int_mod.h" />
     <ClInclude Include="polynomial.h" />
     <ClInclude Include="integer.h" />

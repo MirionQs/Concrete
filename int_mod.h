@@ -3,6 +3,7 @@
 #include "integer.h"
 
 #include <bit>
+#include <compare>
 
 namespace concrete {
 
@@ -25,7 +26,7 @@ namespace concrete {
 		}
 
 		constexpr value_type _reduce(_doubleType x) const noexcept {
-			return value_type{(x + _doubleType{static_cast<value_type>(x) * _mInverseNegate} *_m) >> sizeof(value_type) * 8};
+			return value_type{(x + _doubleType{(value_type)x * _mInverseNegate} *_m) >> (sizeof(value_type) * 8)};
 		}
 
 	public:

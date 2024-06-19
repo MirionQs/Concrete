@@ -13,27 +13,36 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\math">
+      <UniqueIdentifier>{934f8353-3f44-4737-91ab-eee26eeccb45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\data structure">
+      <UniqueIdentifier>{7f79bb6d-2d16-4e02-b00c-69ddaf2b566b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fenwick_tree.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\data structure</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="polynomial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="int_mod.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\math</Filter>
     </ClInclude>
     <ClInclude Include="integer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\math</Filter>
     </ClInclude>
-    <ClInclude Include="mathematics.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="polynomial.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="math.h">
+      <Filter>Header Files\math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,8 @@
 #include <cstdint>
 #include <limits>
+#include <type_traits>
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #include <__msvc_int128.hpp>
 #endif
 
@@ -18,7 +19,7 @@ namespace concrete {
 	using ::std::uint64_t;
 
 	// Assuming the compiler is one of the MSVC, GCC and Clang
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 	using int128_t = ::std::_Signed128;
 	using uint128_t = ::std::_Unsigned128;
 #else
@@ -36,13 +37,13 @@ namespace concrete {
 	constexpr bool is_unsigned_v = ::concrete::is_integral_v<T> && !::concrete::is_signed_v<T>;
 
 	template<class T>
-	struct is_integral : ::std::bool_constant<::concrete::is_integral_v<T>> {};
+	using is_integral = ::std::bool_constant<::concrete::is_integral_v<T>>;
 
 	template<class T>
-	struct is_signed : ::std::bool_constant<::concrete::is_signed_v<T>> {};
+	using is_signed = ::std::bool_constant<::concrete::is_signed_v<T>>;
 
 	template<class T>
-	struct is_unsigned : ::std::bool_constant<::concrete::is_unsigned_v<T>> {};
+	using is_unsigned = ::std::bool_constant<::concrete::is_unsigned_v<T>>;
 
 	template<class T>
 	concept integral = ::concrete::is_integral_v<T>;

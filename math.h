@@ -42,7 +42,7 @@ namespace concrete {
 			if (x == 0) {
 				return x;
 			}
-			unsigned n{32 - (static_cast<unsigned>(::std::countl_zero(x - 1)) >> 1)};
+			unsigned n{32 - ((unsigned)::std::countl_zero(x - 1) >> 1)};
 			::concrete::uint64_t x0{::concrete::uint64_t{1} << n}, x1{(x0 + (x >> n)) >> 1};
 			while (x0 > x1) {
 				x0 = x1;
@@ -50,7 +50,7 @@ namespace concrete {
 			}
 			return x0;
 		}
-		return static_cast<::concrete::uint64_t>(::std::floor(::std::sqrt(x)) + .5);
+		return (::concrete::uint64_t)(::std::floor(::std::sqrt(x)) + .5);
 	}
 
 	constexpr ::concrete::uint64_t power(::concrete::uint64_t x, ::concrete::uint64_t y) noexcept {
@@ -85,8 +85,8 @@ namespace concrete {
 		if (y == 0) {
 			return x;
 		}
-		unsigned xn{static_cast<unsigned>(::std::countr_zero(x))};
-		unsigned yn{static_cast<unsigned>(::std::countr_zero(y))};
+		unsigned xn{(unsigned)::std::countr_zero(x)};
+		unsigned yn{(unsigned)::std::countr_zero(y)};
 		x >>= xn;
 		y >>= yn;
 		while (true) {
@@ -95,14 +95,17 @@ namespace concrete {
 			}
 			x -= y;
 			if (x == 0) {
-				return y << ::std::min(xn, yn);
+				return y << (xn < yn ? xn : yn);
 			}
 			x >>= ::std::countr_zero(x);
 		}
 	}
 
 	constexpr ::concrete::uint64_t least_common_multiple(::concrete::uint64_t x, ::concrete::uint64_t y) noexcept {
-		return x / greatest_common_divisor(x, y) * y;
+		if (x == 0 && y == 0) {
+			return 0;
+		}
+		return x / ::concrete::greatest_common_divisor(x, y) * y;
 	}
 
 	constexpr int kronecker_symbol(::concrete::uint64_t x, ::concrete::uint64_t y) noexcept {
@@ -118,12 +121,12 @@ namespace concrete {
 		unsigned xn, yn;
 		bool m{true};
 		if ((x & 1) == 0) {
-			xn = static_cast<unsigned>(::std::countr_zero(x));
+			xn = (unsigned)::std::countr_zero(x);
 			m = (xn & 1) == 0 || (y & 7) == 1 || (y & 7) == 7;
 			x >>= xn;
 		}
 		else if ((y & 1) == 0) {
-			yn = static_cast<unsigned>(::std::countr_zero(y));
+			yn = (unsigned)::std::countr_zero(y);
 			m = (yn & 1) == 0 || (x & 7) == 1 || (x & 7) == 7;
 			y >>= yn;
 		}
@@ -136,7 +139,7 @@ namespace concrete {
 			if (x == 0) {
 				return y != 1 ? 0 : m ? 1 : -1;
 			}
-			xn = static_cast<unsigned>(::std::countr_zero(x));
+			xn = (unsigned)::std::countr_zero(x);
 			m = m == ((xn & 1) == 0 || (y & 7) == 1 || (y & 7) == 7);
 			x >>= xn;
 		}
@@ -169,7 +172,7 @@ namespace concrete {
 			}
 		}
 		::concrete::montgomery mont{x};
-		unsigned n{static_cast<unsigned>(::std::countr_zero(x - 1))};
+		unsigned n{(unsigned)::std::countr_zero(x - 1)};
 		::concrete::uint64_t c{(x - 1) >> n};
 		for (::concrete::uint64_t b : bases[i]) {
 			::concrete::uint64_t t{mont.power(mont(b), c)};
