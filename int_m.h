@@ -114,21 +114,21 @@ namespace concrete {
 		using modular_arithmetic_type = ::concrete::modular_arithmetic<value_type>;
 
 	private:
-		static constexpr modular_arithmetic_type _arith{m};
+		static constexpr modular_arithmetic_type _mod{m};
 
 		value_type _value;
 
 	public:
 		constexpr int_m(value_type value = 0) noexcept {
-			_value = _arith.from(value);
+			_value = _mod.from(value);
 		}
 
 		explicit constexpr operator value_type() const noexcept {
-			return _arith.to(_value);
+			return _mod.to(_value);
 		}
 
 		constexpr const modular_arithmetic_type& modular_arithmetic() const noexcept {
-			return _arith;
+			return _mod;
 		}
 
 		constexpr value_type raw() const noexcept {
@@ -140,31 +140,31 @@ namespace concrete {
 		}
 
 		constexpr ::std::strong_ordering operator<=>(int_m x) const noexcept {
-			return _arith.compare(_value, x._value);
+			return _mod.compare(_value, x._value);
 		}
 
 		constexpr int_m& negate() noexcept {
-			_value = _arith.negate(_value);
+			_value = _mod.negate(_value);
 			return *this;
 		}
 
 		constexpr int_m& operator+=(int_m x) noexcept {
-			_value = _arith.add(_value, x._value);
+			_value = _mod.add(_value, x._value);
 			return *this;
 		}
 
 		constexpr int_m& operator-=(int_m x) noexcept {
-			_value = _arith.subtract(_value, x._value);
+			_value = _mod.subtract(_value, x._value);
 			return *this;
 		}
 
 		constexpr int_m& operator*=(int_m x) noexcept {
-			_value = _arith.multiply(_value, x._value);
+			_value = _mod.multiply(_value, x._value);
 			return *this;
 		}
 
 		constexpr int_m& operator/=(int_m x) noexcept {
-			_value = _arith.divide(_value, x._value);
+			_value = _mod.divide(_value, x._value);
 			return *this;
 		}
 

@@ -171,15 +171,15 @@ namespace concrete {
 				return false;
 			}
 		}
-		::concrete::modular_arithmetic arith{x};
+		::concrete::modular_arithmetic mod{x};
 		unsigned n{(unsigned)::std::countr_zero(x - 1)};
 		::concrete::uint64_t c{(x - 1) >> n};
 		for (::concrete::uint64_t b : bases[i]) {
-			::concrete::uint64_t t{arith.power(arith.from(b), c)};
-			if (arith.to(t) != 1) {
+			::concrete::uint64_t t{mod.power(mod.from(b), c)};
+			if (mod.to(t) != 1) {
 				unsigned k{0};
-				while (arith.to(t) != x - 1) {
-					t = arith.multiply(t, t);
+				while (mod.to(t) != x - 1) {
+					t = mod.multiply(t, t);
 					if (++k == n) {
 						return false;
 					}
