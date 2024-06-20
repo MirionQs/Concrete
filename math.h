@@ -1,6 +1,6 @@
 #pragma once
 
-#include "int_mod.h"
+#include "int_m.h"
 
 #include <initializer_list>
 #include <cmath>
@@ -171,15 +171,15 @@ namespace concrete {
 				return false;
 			}
 		}
-		::concrete::montgomery mont{x};
+		::concrete::modular_arithmetic arith{x};
 		unsigned n{(unsigned)::std::countr_zero(x - 1)};
 		::concrete::uint64_t c{(x - 1) >> n};
 		for (::concrete::uint64_t b : bases[i]) {
-			::concrete::uint64_t t{mont.power(mont(b), c)};
-			if (mont.to(t) != 1) {
+			::concrete::uint64_t t{arith.power(arith.from(b), c)};
+			if (arith.to(t) != 1) {
 				unsigned k{0};
-				while (mont.to(t) != x - 1) {
-					t = mont.multiply(t, t);
+				while (arith.to(t) != x - 1) {
+					t = arith.multiply(t, t);
 					if (++k == n) {
 						return false;
 					}

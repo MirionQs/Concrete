@@ -32,7 +32,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="int_mod.h">
+    <ClInclude Include="int_m.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
     <ClInclude Include="integer.h">
