@@ -1,31 +1,33 @@
 #pragma once
 
-#include "int_mod.h"
+#include "int_m.h"
 
 #include <vector>
 
 namespace concrete {
 
-	template<::concrete::uint32_t m, ::concrete::uint32_t g>
-	class polynomial : public ::std::vector<::concrete::int_mod<m>> {
+	template<::concrete::integral T>
+	class polynomial_arithmetic {
 	public:
-		using value_type = ::std::vector<int_mod<m>>::value_type;
-		using iterator = ::std::vector<int_mod<m>>::iterator;
-		using const_iterator = ::std::vector<int_mod<m>>::const_iterator;
+		using value_type = ::concrete::make_unsigned_t<T>;
+		using modular_arithmetic_type = ::concrete::modular_arithmetic<value_type>;
 
 	private:
-		static inline ::std::vector<value_type> _roots{1, 1};
+		const modular_arithmetic_type _mod;
+		const value_type _g;
+		::std::vector<value_type> _roots;
 
-		static void _precomputeRoots(::std::size_t n) noexcept {
-			static constexpr value_type gInverse{::concrete::inverse(value_type{g})};
+		void _precomputeRoots(::std::size_t size) noexcept {
 			::std::size_t oldSize{_roots.size()};
-			if (n <= oldSize) {
+			if (size <= oldSize) {
 				return;
 			}
-			_roots.resize(n);
-			::concrete::uint32_t t{m >> ::std::countr_zero(oldSize) >> 1};
-			for (::std::size_t half{oldSize}; half != n; half <<= 1, t >>= 1) {
-				value_type r{power(gInverse, t)};
+
+			_roots.resize(size);
+
+			value_type m{_mod.modulo() >> (::std::countr_zero(oldSize) + 1)};
+			for (::std::size_t half{oldSize}; half != size; half <<= 1, m >>= 1) {
+				value_type r{_mod.power(_g, m)};
 				for (::std::size_t i{half}; i != half << 1; i += 2) {
 					_roots[i] = _roots[i >> 1];
 					_roots[i + 1] = r * _roots[i];
@@ -34,220 +36,141 @@ namespace concrete {
 		}
 
 	public:
-		static void fast_fourier_transform(iterator x, ::std::size_t n) noexcept {
-			if (n == 1) {
+		explicit polynomial_arithmetic(value_type modulo, value_type g) noexcept :
+			_mod{modulo},
+			_g{g},
+			_roots{1, 1} {}
+
+		const modular_arithmetic_type& modular_arithmetic() const noexcept {
+			return _mod;
+		}
+
+		template<::std::ranges::random_access_range R>
+		void negate(R&& range) noexcept {
+			for (value_type& i : range) {
+				i = _mod.negate(i);
+			}
+		}
+
+		template<::std::ranges::random_access_range R>
+		void add(R&& range, value_type value) noexcept {
+			value_type& i{*range.begin()};
+			i = _mod.add(i, value);
+		}
+
+		template<::std::ranges::random_access_range R>
+		void subtract(R&& range, value_type value) noexcept {
+			value_type& i{*range.begin()};
+			i = _mod.subtract(i, value);
+		}
+
+		template<::std::ranges::random_access_range R>
+		void multiply(R&& range, value_type value) noexcept {
+			for (value_type& i : range) {
+				i = _mod.multiply(i, value);
+			}
+		}
+
+		template<::std::ranges::random_access_range R>
+		void divide(R&& range, value_type value) noexcept {
+			value_type inverse{_mod.inverse(value)};
+			for (value_type& i : range) {
+				i = _mod.multiply(i, inverse);
+			}
+		}
+
+		template<::std::ranges::random_access_range R, ::std::random_access_iterator iter>
+		void add(R&& range, iter first) noexcept {
+			for (value_type& i : range) {
+				i = _mod.add(i, *first++);
+			}
+		}
+
+		template<::std::ranges::random_access_range R, ::std::random_access_iterator iter>
+		void subtract(R&& range, iter first) noexcept {
+			for (value_type& i : range) {
+				i = _mod.subtract(i, *first++);
+			}
+		}
+
+		template<::std::ranges::random_access_range R, ::std::random_access_iterator iter>
+		void multiply_inplace(R&& range, iter first) noexcept {
+			fast_fourier_transform(range);
+			fast_fourier_transform(::std::ranges::subrange{first, first + (range.end() - range.begin())});
+			hadamard_product(range, first);
+			inverse_fast_fourier_transform(range);
+		}
+
+		template<::std::ranges::random_access_range R, ::std::random_access_iterator iter>
+		void hadamard_product(R&& range, iter first) noexcept {
+			for (value_type& i : range) {
+				i = _mod.multiply(i, *first++);
+			}
+		}
+
+		template<::std::ranges::random_access_range R>
+		void fast_fourier_transform(R&& range) noexcept {
+			::std::size_t size{range.size()};
+			if (size == 1) {
 				return;
 			}
-			_precomputeRoots(n);
-			for (::std::size_t half{n >> 1}; half != 1; half >>= 1) {
-				for (::std::size_t i{0}; i != n; i += half << 1) {
+
+			_precomputeRoots(size);
+
+			auto x{range.begin()};
+			for (::std::size_t half{size >> 1}; half != 1; half >>= 1) {
+				for (::std::size_t i{0}; i != size; i += half << 1) {
 					auto r{_roots.begin() + half};
 					for (::std::size_t j{i}; j != i + half; ++j) {
 						value_type p{x[j]}, q{x[j + half]};
-						x[j] = p + q;
-						x[j + half] = (p - q) * *r++;
+						x[j] = _mod.add(p, q);
+						x[j + half] = _mod.multiply(_mod.subtract(p, q), *r++);
 					}
 				}
 			}
-			for (::std::size_t i{0}; i != n; i += 2) {
+
+			for (::std::size_t i{0}; i != size; i += 2) {
 				value_type p{x[i]}, q{x[i + 1]};
-				x[i] = p + q;
-				x[i + 1] = p - q;
+				x[i] = _mod.add(p, q);
+				x[i + 1] = _mod.subtract(p, q);
 			}
 		}
 
-		static void inverse_fast_fourier_transform(iterator x, ::std::size_t n) noexcept {
-			if (n == 1) {
+		template<::std::ranges::random_access_range R>
+		void inverse_fast_fourier_transform(R&& range) noexcept {
+			::std::size_t size{range.size()};
+			if (size == 1) {
 				return;
 			}
-			_precomputeRoots(n);
-			value_type nInverse{m - (m >> ::std::countr_zero(n))};
-			for (::std::size_t i{0}; i != n; i += 2) {
+
+			_precomputeRoots(size);
+
+			auto x{range.begin()};
+			value_type m{_mod.modulo()};
+			value_type nInverse{m - (m >> ::std::countr_zero(size))};
+			for (::std::size_t i{0}; i != size; i += 2) {
 				value_type p{x[i]}, q{x[i + 1]};
-				x[i] = (p + q) * nInverse;
-				x[i + 1] = (p - q) * nInverse;
+				x[i] = _mod.multiply(_mod.add(p, q), nInverse);
+				x[i + 1] = _mod.multiply(_mod.subtract(p, q), nInverse);
 			}
-			for (::std::size_t half{2}; half != n; half <<= 1) {
-				for (::std::size_t i{0}; i != n; i += half << 1) {
+
+			for (::std::size_t half{2}; half != size; half <<= 1) {
+				for (::std::size_t i{0}; i != size; i += half << 1) {
 					value_type p{x[i]}, q{x[i + half]};
-					x[i] = p + q;
-					x[i + half] = p - q;
+					x[i] = _mod.add(p, q);
+					x[i + half] = _mod.subtract(p, q);
 					auto r{_roots.begin() + (half << 1)};
 					for (::std::size_t j{i + 1}; j != i + half; ++j) {
-						value_type p{x[j]}, q{x[j + half] * *--r};
-						x[j] = p - q;
-						x[j + half] = p + q;
+						value_type p{x[j]}, q{_mod.multiply(x[j + half], *--r)};
+						x[j] = _mod.subtract(p, q);
+						x[j + half] = _mod.add(p, q);
 					}
 				}
 			}
-		}
-
-		static void negate(iterator x, ::std::size_t n) noexcept {
-			for (::std::size_t i{0}; i != n; ++i) {
-				x[i].negate();
-			}
-		}
-
-		static void add(iterator x, ::std::size_t n, value_type v) noexcept {
-			x[0] += v;
-		}
-
-		static void subtract(iterator x, ::std::size_t n, value_type v) noexcept {
-			x[0] -= v;
-		}
-
-		static void multiply(iterator x, ::std::size_t n, value_type v) noexcept {
-			for (::std::size_t i{0}; i != n; ++i) {
-				x[i] *= v;
-			}
-		}
-
-		static void divide(iterator x, ::std::size_t n, value_type v) noexcept {
-			value_type vInverse{inverse(v)};
-			for (::std::size_t i{0}; i != n; ++i) {
-				x[i] *= vInverse;
-			}
-		}
-
-		static void add(iterator x, ::std::size_t n, const_iterator y) noexcept {
-			for (::std::size_t i{0}; i != n; ++i) {
-				x[i] += y[i];
-			}
-		}
-
-		static void subtract(iterator x, ::std::size_t n, const_iterator y) noexcept {
-			for (::std::size_t i{0}; i != n; ++i) {
-				x[i] -= y[i];
-			}
-		}
-
-		static void multiply(iterator x, ::std::size_t n, iterator y) noexcept {
-			fast_fourier_transform(x, n);
-			fast_fourier_transform(y, n);
-			hadamard_product(x, n, y);
-			inverse_fast_fourier_transform(x, n);
-		}
-
-		static void hadamard_product(iterator x, ::std::size_t n, const_iterator y) noexcept {
-			for (::std::size_t i{0}; i != n; ++i) {
-				x[i] *= y[i];
-			}
-		}
-
-		static void inverse(iterator x, ::std::size_t n) noexcept {
-
-		}
-
-		using ::std::vector<value_type>::vector;
-
-		polynomial& negate() noexcept {
-			negate(this->begin(), this->size());
-			return *this;
-		}
-
-		polynomial& operator+=(::concrete::uint32_t v) noexcept {
-			add(this->begin(), this->size(), v);
-			return *this;
-		}
-
-		polynomial& operator-=(::concrete::uint32_t v) noexcept {
-			subtract(this->begin(), this->size(), v);
-			return *this;
-		}
-
-		polynomial& operator*=(::concrete::uint32_t v) noexcept {
-			multiply(this->begin(), this->size(), v);
-			return *this;
-		}
-
-		polynomial& operator/=(::concrete::uint32_t v) noexcept {
-			divide(this->begin(), this->size(), v);
-			return *this;
-		}
-
-		polynomial& operator+=(const polynomial& p) noexcept {
-			add(this->begin(), this->size(), p.begin());
-			return *this;
-		}
-
-		polynomial& operator-=(const polynomial& p) noexcept {
-			subtract(this->begin(), this->size(), p.begin());
-			return *this;
-		}
-
-		polynomial& operator*=(polynomial&& p) noexcept {
-			multiply(this->begin(), this->size(), p.begin());
-			return *this;
-		}
-
-		polynomial& operator*=(const polynomial& p) noexcept {
-			return *this *= polynomial{p};
-		}
-
-		polynomial operator+() const noexcept {
-			return *this;
-		}
-
-		polynomial operator-() const noexcept {
-			return polynomial{*this}.negate();
-		}
-
-		polynomial operator+(::concrete::uint32_t v) const noexcept {
-			return polynomial{*this} += v;
-		}
-
-		polynomial operator-(::concrete::uint32_t v) const noexcept {
-			return polynomial{*this} -= v;
-		}
-
-		polynomial operator*(::concrete::uint32_t v) const noexcept {
-			return polynomial{*this} *= v;
-		}
-
-		polynomial operator/(::concrete::uint32_t v) const noexcept {
-			return polynomial{*this} /= v;
-		}
-
-		polynomial operator+(const polynomial& p) const noexcept {
-			return polynomial{*this} += p;
-		}
-
-		polynomial operator-(const polynomial& p) const noexcept {
-			return polynomial{*this} -= p;
-		}
-
-		polynomial operator*(polynomial&& p) const noexcept {
-			return polynomial{*this} *= p;
-		}
-
-		polynomial operator*(const polynomial& p) const noexcept {
-			return polynomial{*this} *= p;
 		}
 	};
 
-	template<auto m, auto g>
-	polynomial<m, g> operator+(::concrete::uint32_t v, polynomial<m, g> p) noexcept {
-		return p += v;
-	}
-
-	template<auto m, auto g>
-	polynomial<m, g> operator-(::concrete::uint32_t v, polynomial<m, g> p) noexcept {
-		return p.negate() -= v;
-	}
-
-	template<auto m, auto g>
-	polynomial<m, g> operator*(::concrete::uint32_t v, polynomial<m, g> p) noexcept {
-		return p *= v;
-	}
-
-	template<auto m, auto g>
-	polynomial<m, g> hadamard_product(polynomial<m, g> p, const polynomial<m, g>& q) noexcept {
-		return polynomial<m, g>::hadamard_product(p.begin(), p.size(), q.begin());
-	}
-
-	template<auto m, auto g>
-	polynomial<m, g> inverse(polynomial<m, g> p) noexcept {
-		return polynomial<m, g>::inverse(p.begin(), p.size());
-	}
+	template<class T>
+	explicit polynomial_arithmetic(T, T)->polynomial_arithmetic<T>;
 
 }
