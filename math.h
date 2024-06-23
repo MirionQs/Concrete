@@ -175,7 +175,7 @@ namespace concrete {
 		unsigned n{(unsigned)::std::countr_zero(x - 1)};
 		::concrete::uint64_t c{(x - 1) >> n};
 		for (::concrete::uint64_t b : bases[i]) {
-			::concrete::uint64_t t{mod.power(mod.from(b), c)};
+			::concrete::uint64_t t{mod.power(mod(b), c)};
 			if (mod.to(t) != 1) {
 				unsigned k{0};
 				while (mod.to(t) != x - 1) {

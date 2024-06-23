@@ -43,7 +43,7 @@ namespace concrete {
 			return _m;
 		}
 
-		constexpr value_type from(value_type x) const noexcept {
+		constexpr value_type operator()(value_type x) const noexcept {
 			return _reduce(_doubleType{x} *_rSquare);
 		}
 
@@ -120,7 +120,7 @@ namespace concrete {
 
 	public:
 		constexpr int_m(value_type value = 0) noexcept {
-			_value = _mod.from(value);
+			_value = _mod(value);
 		}
 
 		explicit constexpr operator value_type() const noexcept {

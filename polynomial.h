@@ -39,7 +39,7 @@ namespace concrete {
 		explicit polynomial_arithmetic(value_type modulo, value_type g) noexcept :
 			_mod{modulo},
 			_g{g},
-			_root{_mod.from(1), _mod.from(1)} {}
+			_root{_mod(1), _mod(1)} {}
 
 		const modular_arithmetic_type& modular_arithmetic() const noexcept {
 			return _mod;
@@ -83,7 +83,7 @@ namespace concrete {
 			_precomputeRoots(size);
 
 			auto x{range.begin()};
-			value_type inverse{_mod.from(_mod.modulo() - (_mod.modulo() >> ::std::countr_zero(size)))};
+			value_type inverse{_mod(_mod.modulo() - (_mod.modulo() >> ::std::countr_zero(size)))};
 			for (::std::size_t i{0}; i != size; i += 2) {
 				value_type p{x[i]}, q{x[i + 1]};
 				x[i] = _mod.multiply(_mod.add(p, q), inverse);
@@ -106,9 +106,9 @@ namespace concrete {
 		}
 
 		template<::std::ranges::random_access_range R>
-		void from(R&& range) noexcept {
+		void operator()(R&& range) noexcept {
 			for (value_type& i : range) {
-				i = _mod.from(i);
+				i = _mod(i);
 			}
 		}
 
