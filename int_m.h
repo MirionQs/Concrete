@@ -72,7 +72,7 @@ namespace concrete {
 		constexpr value_type subtract(value_type xR, value_type yR) const noexcept {
 			xR -= yR;
 			constexpr ::std::size_t n{sizeof(value_type) * 8 - 1};
-			return xR >> n ? xR : xR + _mDouble;
+			return xR >> n == 0 ? xR : xR + _mDouble;
 		}
 
 		constexpr value_type multiply(value_type xR, value_type yR) const noexcept {
