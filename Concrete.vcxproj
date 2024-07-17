@@ -136,7 +136,6 @@
   <ItemGroup>
     <ClInclude Include="math.h" />
     <ClInclude Include="int_m.h" />
-    <ClInclude Include="polynomial.h" />
     <ClInclude Include="integer.h" />
   </ItemGroup>
   <ItemGroup>

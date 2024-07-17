@@ -3,44 +3,63 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
+#include <ranges>
 #include <vector>
 
 template<class function>
 void test(const std::string& label, function func, const std::string& expected) {
-	std::streambuf* coutBuf{std::cout.rdbuf()};
-	std::stringstream s1, s2{expected};
-	std::cout.rdbuf(s1.rdbuf());
-	func();
-	std::cout.rdbuf(coutBuf);
+	std::ostringstream stream;
+	auto buffer{std::cout.rdbuf()};
+	auto flags{std::cout.flags()};
 
-	char c1{'\0'}, c2{'\0'};
-	while (s1 >> c1 && s2 >> c2 && c1 == c2);
-	s1 >> std::ws || s2 >> std::ws;
-	size_t space{std::max(label.size() + 1, size_t{36})};
-	if (s1.eof() && s2.eof() && c1 == c2) {
-		std::cout << "\033[32m" << std::left << std::setw(space) << label << "Test Passed\n"
-			<< "\033[m";
+	std::cout.rdbuf(stream.rdbuf());
+	func();
+	std::cout.rdbuf(buffer);
+	std::cout.flags(flags);
+	std::string actual{stream.str()};
+
+	auto p1{std::ranges::find_if_not(actual, std::isspace)}, e1{actual.end()};
+	auto p2{std::ranges::find_if_not(expected, std::isspace)}, e2{expected.end()};
+
+	do {
+		auto n1{std::ranges::find_if_not(p1, e1, std::isspace)};
+		auto n2{std::ranges::find_if_not(p2, e2, std::isspace)};
+		if ((p1 == n1) != (p2 == n2)) {
+			break;
+		}
+		p1 = n1;
+		p2 = n2;
+	} while (p1 != e1 && p2 != e2 && *p1++ == *p2++);
+	p1 = std::ranges::find_if_not(p1, e1, std::isspace);
+	p2 = std::ranges::find_if_not(p2, e2, std::isspace);
+
+	static constexpr auto reset{"\033[m"}, red{"\033[31m"}, green{"\033[32m"}, yellow{"\033[33m"};
+	std::size_t space{std::max(label.size() + 1, std::size_t{36})};
+
+	std::cout << std::left;
+	if (p1 == e1 && p2 == e2) {
+		std::cout << green << std::setw(space) << label << "Test Passed\n" << reset;
 	}
 	else {
-		std::cout << "\033[31m" << std::left << std::setw(space) << label << "Test Failed\n"
-			<< "\033[33m" << "[expected output]\n"
-			<< "\033[m" << expected << '\n'
-			<< "\033[33m" << "[actual output]\n"
-			<< "\033[m" << s1.str() << '\n';
+		std::cout << red << std::setw(space) << label << "Test Failed\n"
+			<< yellow << "[Expected Output]\n" << reset << expected << '\n'
+			<< yellow << "[Actual Output]\n" << reset << actual << '\n';
 	}
+	std::cout.flags(flags);
 }
 
 namespace math_test {
 
 	void sqrt() {
-		std::vector<concrete::uint64_t> a{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1182280556, 1078161935, 1727740828, 1988114385, 1915211379};
+		std::vector<std::uint64_t> a{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1182280556, 1078161935, 1727740828, 1988114385, 1915211379};
 		for (auto& i : a) {
 			std::cout << concrete::square_root(i) << ' ';
 		}
 	}
 
 	void pow() {
-		std::vector<concrete::uint64_t> a{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 3002069754, 3272062159, 2873182719, 2496520859, 3004049190};
+		std::vector<std::uint64_t> a{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 3002069754, 3272062159, 2873182719, 2496520859, 3004049190};
 		for (auto& i : a) {
 			std::cout << concrete::power(i, i) << ' ';
 		}
@@ -68,7 +87,7 @@ namespace math_test {
 	}
 
 	void is_prime() {
-		std::vector<concrete::uint64_t> a{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 4204940309, 4080787278, 3932737873, 2564387963, 2207258474};
+		std::vector<std::uint64_t> a{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 4204940309, 4080787278, 3932737873, 2564387963, 2207258474};
 		for (auto& i : a) {
 			std::cout << concrete::is_prime(i) << ' ';
 		}

@@ -38,9 +38,6 @@
     <ClInclude Include="integer.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
-    <ClInclude Include="polynomial.h">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
     <ClInclude Include="math.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
