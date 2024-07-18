@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "group_traits.h"
 
 namespace concrete {
 
@@ -50,18 +50,23 @@ namespace concrete {
 	};
 
 	// range update and point query
-	template <class T, class binary_operator = ::std::plus<>, class inverse_binary_operator = ::std::minus<>, class inverse_operator = ::std::negate<>>
+	template <
+		class T,
+		class binary_operator = ::std::plus<>,
+		class inverse_operator = ::concrete::group_traits<T, binary_operator>::inverse_operation,
+		class binary_inverse_operator = ::concrete::group_traits<T, binary_operator>::binary_inverse_operation
+	>
 	class fenwick_tree_rp : private fenwick_tree_pr<T, binary_operator> {
 		using base = fenwick_tree_pr<T, binary_operator>;
 
-		static constexpr inverse_binary_operator _invOp{};
 		static constexpr inverse_operator _inv{};
+		static constexpr binary_inverse_operator _binInv{};
 
 		template <::std::input_iterator iter>
 		static base _construct(iter first, iter last) {
 			::std::vector<T> diff(first, last);
 			for (::std::size_t i{diff.size() - 1}; i != 0; --i) {
-				diff[i] = _invOp(diff[i], diff[i - 1]);
+				diff[i] = _binInv(diff[i], diff[i - 1]);
 			}
 			return base{diff.begin(), diff.end()};
 		}

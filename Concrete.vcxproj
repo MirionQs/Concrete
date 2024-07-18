@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="group_traits.h" />
     <ClCompile Include="fenwick_tree.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="power.cpp" />

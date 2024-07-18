@@ -22,6 +22,9 @@
     <Filter Include="Source Files\benchmark">
       <UniqueIdentifier>{c58ea069-bf89-4589-ba78-ac2869202d8b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{6e6218e9-825f-4dce-a025-057376fb5004}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fenwick_tree.h">
@@ -36,16 +39,19 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="group_traits.h">
+      <Filter>Header Files\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="math.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
     <ClInclude Include="int_m.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
     <ClInclude Include="integer.h">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
-    <ClInclude Include="math.h">
-      <Filter>Header Files\math</Filter>
+      <Filter>Header Files\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

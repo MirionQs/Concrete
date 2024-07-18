@@ -125,6 +125,6 @@ namespace math_test {
 
 }
 
-int main() {
-	math_test::run();
-}
+//int main() {
+//	math_test::run();
+//}
