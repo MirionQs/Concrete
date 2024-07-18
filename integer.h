@@ -18,7 +18,6 @@ namespace concrete {
 	using ::std::uint32_t;
 	using ::std::uint64_t;
 
-	// Assuming the compiler is one of the MSVC, GCC and Clang
 #ifdef _MSC_VER
 	using int128_t = ::std::_Signed128;
 	using uint128_t = ::std::_Unsigned128;

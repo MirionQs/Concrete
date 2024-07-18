@@ -19,15 +19,21 @@
     <Filter Include="Header Files\data structure">
       <UniqueIdentifier>{7f79bb6d-2d16-4e02-b00c-69ddaf2b566b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\benchmark">
+      <UniqueIdentifier>{c58ea069-bf89-4589-ba78-ac2869202d8b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="fenwick_tree.h">
       <Filter>Header Files\data structure</Filter>
     </ClCompile>
     <ClCompile Include="test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="power.cpp">
+      <Filter>Source Files\benchmark</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

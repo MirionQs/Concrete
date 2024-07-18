@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="fenwick_tree.h" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="power.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>

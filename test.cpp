@@ -120,7 +120,6 @@ namespace math_test {
 0	1	0	-1	0	-1	0	1	0	1
 0	1	1	0	1	1	0	1	1	0
 )");
-
 		test("is_prime", is_prime, "0 0 1 1 0 1 0 1 0 0 1 0 1 1 0");
 	}
 

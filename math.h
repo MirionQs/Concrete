@@ -38,42 +38,33 @@ namespace concrete {
 	}
 
 	constexpr ::concrete::uint64_t square_root(::concrete::uint64_t x) noexcept {
-		if (::std::is_constant_evaluated()) {
-			if (x == 0) {
-				return x;
-			}
-			unsigned n{32 - ((unsigned)::std::countl_zero(x - 1) >> 1)};
-			::concrete::uint64_t x0{::concrete::uint64_t{1} << n}, x1{(x0 + (x >> n)) >> 1};
-			while (x0 > x1) {
-				x0 = x1;
-				x1 = (x0 + x / x0) >> 1;
-			}
-			return x0;
+		if (x == 0) {
+			return 0;
 		}
-		return (::concrete::uint64_t)(::std::floor(::std::sqrt(x)) + .5);
+		unsigned n{32 - ((unsigned)::std::countl_zero(x - 1) >> 1)};
+		::concrete::uint64_t x0{::concrete::uint64_t{1} << n}, x1{(x0 + (x >> n)) >> 1};
+		while (x0 > x1) {
+			x0 = x1;
+			x1 = (x0 + x / x0) >> 1;
+		}
+		return x0;
 	}
 
 	constexpr ::concrete::uint64_t power(::concrete::uint64_t x, ::concrete::uint64_t y) noexcept {
-		if (x == 0) {
-			return y == 0;
+		::concrete::uint64_t res{1}, tab[16]{1};
+		for (size_t i{1}; i != 16; ++i) {
+			tab[i] = tab[i - 1] * x;
 		}
-		if (x == 1) {
-			return 1;
-		}
-		::concrete::uint64_t res{1};
-		while (y != 0) {
-			::concrete::uint64_t x2{x * x}, x3{x2 * x};
-			if ((y & 3) == 1) {
-				res *= x;
-			}
-			else if ((y & 3) == 2) {
-				res *= x2;
-			}
-			else if ((y & 3) == 3) {
-				res *= x3;
-			}
-			x *= x3;
-			y >>= 2;
+		unsigned n{(unsigned)std::countl_zero(y) & ~3};
+		y <<= n;
+		while (n != 64) {
+			res *= res;
+			res *= res;
+			res *= res;
+			res *= res;
+			res *= tab[y >> 60];
+			n += 4;
+			y <<= 4;
 		}
 		return res;
 	}
