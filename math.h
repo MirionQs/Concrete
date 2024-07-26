@@ -136,7 +136,7 @@ namespace concrete {
 	}
 
 	constexpr bool is_prime(::concrete::uint64_t x) noexcept {
-		using namespace detail::is_prime;
+		using namespace ::concrete::detail::is_prime;
 		if (x == 0 || x == 1) {
 			return false;
 		}

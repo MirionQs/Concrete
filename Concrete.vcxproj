@@ -142,6 +142,7 @@
     <ClInclude Include="integral.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="merge.py" />
     <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

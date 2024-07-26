@@ -41,8 +41,9 @@ namespace concrete {
 			_apply(index, [&](T& x) { _op(x, value); });
 		}
 
-		template<::std::enable_if_t<::concrete::is_group_v<Op>, int> = 0>
 		void apply_inverse(::std::size_t index, const T& value) noexcept {
+			static_assert(::concrete::is_group_v<Op>, "Op should be invertible.");
+
 			static constexpr auto invOp{::concrete::inverse_assignment_operator_t<Op>{}};
 			_apply(index, [&](T& x) { invOp(x, value); });
 		}
@@ -61,6 +62,8 @@ namespace concrete {
 
 	template <class T, class Op = ::concrete::add<T>>
 	class fenwick_tree_diff : private fenwick_tree<T, Op> {
+		static_assert(::concrete::is_group_v<Op>, "Op should be invertible.");
+
 		using base = fenwick_tree<T, Op>;
 
 		static constexpr auto _invOp{::concrete::inverse_assignment_operator_t<Op>{}};
