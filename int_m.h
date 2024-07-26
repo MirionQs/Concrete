@@ -1,35 +1,33 @@
 #pragma once
 
-#include "integer.h"
-#include "group_traits.h"
-
-#include <bit>
-#include <compare>
+#include "integral.h"
+#include "standard.h"
 
 namespace concrete {
 
-	template<::concrete::integral T>
+	template<class T>
 	class modular_arithmetic {
+		static_assert(::concrete::is_integral_v<T>, "T should be an integral type.");
+
 	public:
 		using value_type = ::concrete::make_unsigned_t<T>;
 
 	private:
-		using _doubleType = ::concrete::unsigned_integer_t<sizeof(value_type) * 2>;
+		using _double = ::concrete::unsigned_integral_t<sizeof(value_type) * 2>;
 
 		const value_type _m, _mDouble, _mInverseNegate, _r, _rSquare;
 
 		constexpr value_type _inverse(value_type x) const noexcept {
 			value_type res{1};
-			constexpr ::std::size_t n{::std::countr_zero(sizeof(value_type) * 8)};
+			constexpr ::std::size_t n{::concrete::countr_zero(sizeof(value_type) * 8)};
 			for (::std::size_t i{0}; i != n; ++i) {
 				res *= 2 - res * x;
 			}
 			return res;
 		}
 
-		constexpr value_type _reduce(_doubleType x) const noexcept {
-			constexpr ::std::size_t n{sizeof(value_type) * 8};
-			return value_type{(x + _doubleType{(value_type)x * _mInverseNegate} *_m) >> n};
+		constexpr value_type _reduce(_double x) const noexcept {
+			return value_type{(x + _double{(value_type)x * _mInverseNegate} *_m) >> (sizeof(value_type) * 8)};
 		}
 
 	public:
@@ -38,25 +36,44 @@ namespace concrete {
 			_mDouble{modulo << 1},
 			_mInverseNegate{~_inverse(modulo) + 1},
 			_r{(~value_type{modulo} + 1) % modulo},
-			_rSquare{(~_doubleType{modulo} + 1) % modulo} {}
+			_rSquare{(~_double{modulo} + 1) % modulo} {}
 
 		constexpr value_type modulo() const noexcept {
 			return _m;
 		}
 
 		constexpr value_type operator()(value_type x) const noexcept {
-			return _reduce(_doubleType{x} *_rSquare);
+			return _reduce(_double{x} *_rSquare);
 		}
 
 		constexpr value_type to(value_type xR) const noexcept {
 			value_type res{_reduce(xR)};
 			value_type t{res - _m};
-			constexpr ::std::size_t n{sizeof(value_type) * 8 - 1};
-			return t >> n == 0 ? t : res;
+			return t >> (sizeof(value_type) * 8 - 1) == 0 ? t : res;
 		}
 
-		constexpr ::std::strong_ordering compare(value_type xR, value_type yR) const noexcept {
-			return to(xR) <=> to(yR);
+		constexpr bool equal(value_type xR, value_type yR) const noexcept {
+			return to(xR) == to(yR);
+		}
+
+		constexpr bool not_equal(value_type xR, value_type yR) const noexcept {
+			return to(xR) != to(yR);
+		}
+
+		constexpr bool less(value_type xR, value_type yR) const noexcept {
+			return to(xR) < to(yR);
+		}
+
+		constexpr bool less_equal(value_type xR, value_type yR) const noexcept {
+			return to(xR) <= to(yR);
+		}
+
+		constexpr bool greater(value_type xR, value_type yR) const noexcept {
+			return to(xR) > to(yR);
+		}
+
+		constexpr bool greater_equal(value_type xR, value_type yR) const noexcept {
+			return to(xR) >= to(yR);
 		}
 
 		constexpr value_type negate(value_type xR) const noexcept {
@@ -66,18 +83,16 @@ namespace concrete {
 		constexpr value_type add(value_type xR, value_type yR) const noexcept {
 			xR += yR;
 			value_type t{xR - _mDouble};
-			constexpr ::std::size_t n{sizeof(value_type) * 8 - 1};
-			return t >> n == 0 ? t : xR;
+			return t >> (sizeof(value_type) * 8 - 1) == 0 ? t : xR;
 		}
 
 		constexpr value_type subtract(value_type xR, value_type yR) const noexcept {
 			xR -= yR;
-			constexpr ::std::size_t n{sizeof(value_type) * 8 - 1};
-			return xR >> n == 0 ? xR : xR + _mDouble;
+			return xR >> (sizeof(value_type) * 8 - 1) == 0 ? xR : xR + _mDouble;
 		}
 
 		constexpr value_type multiply(value_type xR, value_type yR) const noexcept {
-			return _reduce(_doubleType{xR} *yR);
+			return _reduce(_double{xR} *yR);
 		}
 
 		constexpr value_type divide(value_type xR, value_type yR) const noexcept {
@@ -107,9 +122,11 @@ namespace concrete {
 	template<class T>
 	explicit modular_arithmetic(T)->modular_arithmetic<T>;
 
-	template<::concrete::integral auto m>
-		requires(m % 2 != 0 && m >> (sizeof(m) * 8 - 2) == 0)
+	template<auto m>
 	class int_m {
+		static_assert(::concrete::is_integral_v<decltype(m)>&& m % 2 != 0 && m >> (sizeof(m) * 8 - 2) == 0,
+			"m should be an odd number less than 2 ^ (sizeof(m) * 8 - 2).");
+
 	public:
 		using value_type = ::concrete::make_unsigned_t<decltype(m)>;
 		using modular_arithmetic_type = ::concrete::modular_arithmetic<value_type>;
@@ -140,8 +157,28 @@ namespace concrete {
 			_value = value;
 		}
 
-		constexpr ::std::strong_ordering operator<=>(int_m x) const noexcept {
-			return _mod.compare(_value, x._value);
+		constexpr bool operator==(int_m x) const noexcept {
+			return _mod.equal(_value, x._value);
+		}
+
+		constexpr bool operator!=(int_m x) const noexcept {
+			return _mod.not_equal(_value, x._value);
+		}
+
+		constexpr bool operator<(int_m x) const noexcept {
+			return _mod.less(_value, x._value);
+		}
+
+		constexpr bool operator<=(int_m x) const noexcept {
+			return _mod.less_equal(_value, x._value);
+		}
+
+		constexpr bool operator>(int_m x) const noexcept {
+			return _mod.greater(_value, x._value);
+		}
+
+		constexpr bool operator>=(int_m x) const noexcept {
+			return _mod.greater_equal(_value, x._value);
 		}
 
 		constexpr int_m& negate() noexcept {
@@ -225,30 +262,5 @@ namespace concrete {
 		x.raw(x.modular_arithmetic().inverse(x.raw()));
 		return x;
 	}
-
-	template<auto m>
-	struct group_traits<int_m<m>, ::std::plus<>> {
-		using value_type = int_m<m>;
-		using binary_operation = ::std::plus<value_type>;
-
-		static constexpr value_type identity{0};
-		using inverse_operation = ::std::negate<value_type>;
-		using binary_inverse_operation = ::std::minus<value_type>;
-	};
-
-	template<auto m>
-	struct group_traits<int_m<m>, ::std::multiplies<>> {
-		using value_type = int_m<m>;
-		using binary_operation = ::std::multiplies<value_type>;
-
-		static constexpr value_type identity{1};
-		using binary_inverse_operation = ::std::divides<value_type>;
-
-		struct inverse_operation {
-			constexpr value_type operator()(const value_type& x) const noexcept {
-				return inverse(x);
-			}
-		};
-	};
 
 }
