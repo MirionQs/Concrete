@@ -33,7 +33,7 @@
     <ClCompile Include="test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="power.cpp">
+    <ClCompile Include="bm_power.cpp">
       <Filter>Source Files\benchmark</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">

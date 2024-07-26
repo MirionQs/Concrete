@@ -2,8 +2,8 @@
 #pragma comment(lib, "shlwapi.lib")
 #include <benchmark/benchmark.h>
 
+#include "standard.h"
 #include <random>
-#include <bit>
 
 constexpr uint64_t RL(uint64_t x, uint64_t y) noexcept {
 	uint64_t res{1};
@@ -40,7 +40,7 @@ constexpr uint64_t RL4(uint64_t x, uint64_t y) noexcept {
 
 constexpr uint64_t LR(uint64_t x, uint64_t y) noexcept {
 	uint64_t res{1};
-	unsigned n{(unsigned)std::countl_zero(y)};
+	unsigned n{(unsigned)concrete::countl_zero(y)};
 	y <<= n;
 	while (n != 64) {
 		res *= res;
@@ -55,7 +55,7 @@ constexpr uint64_t LR(uint64_t x, uint64_t y) noexcept {
 
 constexpr uint64_t LR4(uint64_t x, uint64_t y) noexcept {
 	uint64_t res{1}, tab[4]{1, x, x * x, x * x * x};
-	unsigned n{(unsigned)std::countl_zero(y) & ~1};
+	unsigned n{(unsigned)concrete::countl_zero(y) & ~1};
 	y <<= n;
 	while (n != 64) {
 		res *= res;
@@ -72,7 +72,7 @@ constexpr uint64_t LR16(uint64_t x, uint64_t y) noexcept {
 	for (size_t i{1}; i != 16; ++i) {
 		tab[i] = tab[i - 1] * x;
 	}
-	unsigned n{(unsigned)std::countl_zero(y) & ~3};
+	unsigned n{(unsigned)concrete::countl_zero(y) & ~3};
 	y <<= n;
 	while (n != 64) {
 		res *= res;
@@ -91,7 +91,7 @@ constexpr bool test{LR16(3272062159, 3272062159) == 1783393135476470575};
 #define BMS(func, scope) \
 static void func##_##scope(benchmark::State& state) { \
 	std::mt19937_64 eng{std::random_device{}()}; \
-	std::uniform_int_distribution dist; \
+	std::uniform_int_distribution dist{}; \
 	for (auto _ : state) { \
 		auto res{scope::func(dist(eng), dist(eng))}; \
 		benchmark::DoNotOptimize(res); \
