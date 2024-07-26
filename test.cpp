@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
-#include <ranges>
 #include <vector>
 
 template<class function>
@@ -19,20 +18,20 @@ void test(const std::string& label, function func, const std::string& expected) 
 	std::cout.flags(flags);
 	std::string actual{stream.str()};
 
-	auto p1{std::ranges::find_if_not(actual, std::isspace)}, e1{actual.end()};
-	auto p2{std::ranges::find_if_not(expected, std::isspace)}, e2{expected.end()};
+	auto p1{std::find_if_not(actual.begin(), actual.end(), std::isspace)}, e1{actual.end()};
+	auto p2{std::find_if_not(expected.begin(), expected.end(), std::isspace)}, e2{expected.end()};
 
 	do {
-		auto n1{std::ranges::find_if_not(p1, e1, std::isspace)};
-		auto n2{std::ranges::find_if_not(p2, e2, std::isspace)};
+		auto n1{std::find_if_not(p1, e1, std::isspace)};
+		auto n2{std::find_if_not(p2, e2, std::isspace)};
 		if ((p1 == n1) != (p2 == n2)) {
 			break;
 		}
 		p1 = n1;
 		p2 = n2;
 	} while (p1 != e1 && p2 != e2 && *p1++ == *p2++);
-	p1 = std::ranges::find_if_not(p1, e1, std::isspace);
-	p2 = std::ranges::find_if_not(p2, e2, std::isspace);
+	p1 = std::find_if_not(p1, e1, std::isspace);
+	p2 = std::find_if_not(p2, e2, std::isspace);
 
 	static constexpr auto reset{"\033[m"}, red{"\033[31m"}, green{"\033[32m"}, yellow{"\033[33m"};
 	std::size_t space{std::max(label.size() + 1, std::size_t{36})};

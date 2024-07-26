@@ -1,6 +1,7 @@
 #pragma once
 
 #include <climits>
+#include <utility>
 
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -10,6 +11,13 @@ namespace concrete {
 
 	constexpr bool is_constant_evaluated() noexcept {
 		return __builtin_is_constant_evaluated();
+	}
+
+	template<class T>
+	constexpr void swap(T& x, T& y) noexcept {
+		T tmp{::std::move(x)};
+		x = ::std::move(y);
+		y = ::std::move(tmp);
 	}
 
 	template<class T>

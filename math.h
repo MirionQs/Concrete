@@ -2,8 +2,8 @@
 
 #include "int_m.h"
 
-#include <initializer_list>
 #include <cmath>
+#include <initializer_list>
 
 namespace concrete {
 
@@ -41,7 +41,7 @@ namespace concrete {
 		if (x == 0) {
 			return 0;
 		}
-		unsigned n{32 - ((unsigned)::std::countl_zero(x - 1) >> 1)};
+		unsigned n{32 - ((unsigned)::concrete::countl_zero(x - 1) >> 1)};
 		::concrete::uint64_t x0{::concrete::uint64_t{1} << n}, x1{(x0 + (x >> n)) >> 1};
 		while (x0 > x1) {
 			x0 = x1;
@@ -55,7 +55,7 @@ namespace concrete {
 		for (size_t i{1}; i != 16; ++i) {
 			tab[i] = tab[i - 1] * x;
 		}
-		unsigned n{(unsigned)std::countl_zero(y) & ~3};
+		unsigned n{(unsigned)::concrete::countl_zero(y) & ~3};
 		y <<= n;
 		while (n != 64) {
 			res *= res;
@@ -76,19 +76,19 @@ namespace concrete {
 		if (y == 0) {
 			return x;
 		}
-		unsigned xn{(unsigned)::std::countr_zero(x)};
-		unsigned yn{(unsigned)::std::countr_zero(y)};
+		unsigned xn{(unsigned)::concrete::countr_zero(x)};
+		unsigned yn{(unsigned)::concrete::countr_zero(y)};
 		x >>= xn;
 		y >>= yn;
 		while (true) {
 			if (x < y) {
-				::std::swap(x, y);
+				::concrete::swap(x, y);
 			}
 			x -= y;
 			if (x == 0) {
 				return y << (xn < yn ? xn : yn);
 			}
-			x >>= ::std::countr_zero(x);
+			x >>= ::concrete::countr_zero(x);
 		}
 	}
 
@@ -109,28 +109,27 @@ namespace concrete {
 		if (((x | y) & 1) == 0) {
 			return 0;
 		}
-		unsigned xn, yn;
 		bool m{true};
 		if ((x & 1) == 0) {
-			xn = (unsigned)::std::countr_zero(x);
+			unsigned xn{(unsigned)::concrete::countr_zero(x)};
 			m = (xn & 1) == 0 || (y & 7) == 1 || (y & 7) == 7;
 			x >>= xn;
 		}
 		else if ((y & 1) == 0) {
-			yn = (unsigned)::std::countr_zero(y);
+			unsigned yn{(unsigned)::concrete::countr_zero(y)};
 			m = (yn & 1) == 0 || (x & 7) == 1 || (x & 7) == 7;
 			y >>= yn;
 		}
 		while (true) {
 			if (x < y) {
-				::std::swap(x, y);
+				::concrete::swap(x, y);
 				m = m == ((x & y & 2) == 0);
 			}
 			x -= y;
 			if (x == 0) {
 				return y != 1 ? 0 : m ? 1 : -1;
 			}
-			xn = (unsigned)::std::countr_zero(x);
+			unsigned xn{(unsigned)::concrete::countr_zero(x)};
 			m = m == ((xn & 1) == 0 || (y & 7) == 1 || (y & 7) == 7);
 			x >>= xn;
 		}
@@ -163,7 +162,7 @@ namespace concrete {
 			}
 		}
 		::concrete::modular_arithmetic mod{x};
-		unsigned n{(unsigned)::std::countr_zero(x - 1)};
+		unsigned n{(unsigned)::concrete::countr_zero(x - 1)};
 		::concrete::uint64_t c{(x - 1) >> n};
 		for (::concrete::uint64_t b : bases[i]) {
 			::concrete::uint64_t t{mod.power(mod(b), c)};
