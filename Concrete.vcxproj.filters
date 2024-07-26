@@ -39,7 +39,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="group_traits.h">
+    <ClCompile Include="operator.h">
       <Filter>Header Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClInclude Include="int_m.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
-    <ClInclude Include="integer.h">
+    <ClInclude Include="integral.h">
       <Filter>Header Files\utils</Filter>
     </ClInclude>
   </ItemGroup>
