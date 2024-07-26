@@ -136,6 +136,7 @@
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="standard.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="int_m.h" />
     <ClInclude Include="integral.h" />
