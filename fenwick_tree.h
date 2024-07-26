@@ -1,47 +1,57 @@
 #pragma once
 
-#include "group_traits.h"
+#include "operator.h"
 
 namespace concrete {
 
-	// point update and range query
-	template <class T, class binary_operator = ::std::plus<>>
-	class fenwick_tree_pr : private ::std::vector<T> {
+	template <class T, class Op = ::concrete::add<T>>
+	class fenwick_tree : private ::std::vector<T> {
 		using base = ::std::vector<T>;
 
-		static constexpr binary_operator _op{};
+		static constexpr ::concrete::assignment_operator_t<Op> _op{};
 
 		T& _at(::std::size_t index) noexcept {
 			return base::operator[](index);
 		}
 
-	public:
-		explicit fenwick_tree_pr(::std::size_t size) noexcept : base(size) {}
+		template<class Fn>
+		void _apply(::std::size_t index, Fn function) {
+			::std::size_t size{this->size()};
+			while (index < size) {
+				function(_at(index));
+				index |= index + 1;
+			}
+		}
 
-		template <::std::input_iterator iter>
-		explicit fenwick_tree_pr(iter first, iter last) noexcept : base(first, last) {
+	public:
+		explicit fenwick_tree(::std::size_t size) noexcept : base(size) {}
+
+		template <class input_iterator>
+		explicit fenwick_tree(input_iterator first, input_iterator last) noexcept : base(first, last) {
 			::std::size_t size{this->size()};
 			for (::std::size_t i{0}; i != size; ++i) {
 				::std::size_t j{i | i + 1};
 				if (j < size) {
-					_at(j) = _op(_at(j), _at(i));
+					_op(_at(j), _at(i));
 				}
 			}
 		}
 
 		void apply(::std::size_t index, const T& value) noexcept {
-			::std::size_t size{this->size()};
-			while (index < size) {
-				_at(index) = _op(_at(index), value);
-				index |= index + 1;
-			}
+			_apply(index, [&](T& x) { _op(x, value); });
+		}
+
+		template<::std::enable_if_t<::concrete::is_group_v<Op>, int> = 0>
+		void apply_inverse(::std::size_t index, const T& value) noexcept {
+			static constexpr auto invOp{::concrete::inverse_assignment_operator_t<Op>{}};
+			_apply(index, [&](T& x) { invOp(x, value); });
 		}
 
 		T operator[](::std::size_t index) noexcept {
 			T res{};
 			::std::size_t size{this->size()};
 			while (index < size) {
-				res = _op(res, _at(index));
+				_op(res, _at(index));
 				index &= index + 1;
 				--index;
 			}
@@ -49,24 +59,17 @@ namespace concrete {
 		}
 	};
 
-	// range update and point query
-	template <
-		class T,
-		class binary_operator = ::std::plus<>,
-		class inverse_operator = ::concrete::group_traits<T, binary_operator>::inverse_operation,
-		class binary_inverse_operator = ::concrete::group_traits<T, binary_operator>::binary_inverse_operation
-	>
-	class fenwick_tree_rp : private fenwick_tree_pr<T, binary_operator> {
-		using base = fenwick_tree_pr<T, binary_operator>;
+	template <class T, class Op = ::concrete::add<T>>
+	class fenwick_tree_diff : private fenwick_tree<T, Op> {
+		using base = fenwick_tree<T, Op>;
 
-		static constexpr inverse_operator _inv{};
-		static constexpr binary_inverse_operator _binInv{};
+		static constexpr auto _invOp{::concrete::inverse_assignment_operator_t<Op>{}};
 
-		template <::std::input_iterator iter>
-		static base _construct(iter first, iter last) {
+		template <class input_iterator>
+		static base _construct(input_iterator first, input_iterator last) {
 			::std::vector<T> diff(first, last);
 			for (::std::size_t i{diff.size() - 1}; i != 0; --i) {
-				diff[i] = _binInv(diff[i], diff[i - 1]);
+				diff[i] = _invOp(diff[i], diff[i - 1]);
 			}
 			return base{diff.begin(), diff.end()};
 		}
@@ -74,14 +77,14 @@ namespace concrete {
 	public:
 		using base::operator[];
 
-		explicit fenwick_tree_rp(::std::size_t size) noexcept : base{size} {}
+		explicit fenwick_tree_diff(::std::size_t size) noexcept : base{size} {}
 
-		template <::std::input_iterator iter>
-		explicit fenwick_tree_rp(iter first, iter last) noexcept : base{::std::move(_construct(first, last))} {}
+		template <class input_iterator>
+		explicit fenwick_tree_diff(input_iterator first, input_iterator last) noexcept : base{::std::move(_construct(first, last))} {}
 
 		void apply(::std::size_t first, ::std::size_t last, const T& value) noexcept {
 			base::apply(first, value);
-			base::apply(last, _inv(value));
+			base::apply_inverse(last, value);
 		}
 	};
 }

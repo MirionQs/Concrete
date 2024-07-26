@@ -132,75 +132,116 @@ namespace concrete {
 	template<class Op>
 	using assignment_operator_t = typename ::concrete::assignment_operator<Op>::type;
 
-	struct magma_tag {};
+	template<class Op>
+	struct inverse_operator {};
+
+	template<class T>
+	struct inverse_operator<::concrete::add<T>> {
+		using type = ::concrete::subtract<T>;
+	};
+
+	template<class T>
+	struct inverse_operator<::concrete::multiply<T>> {
+		using type = ::concrete::divide<T>;
+	};
+
+	template<class Op>
+	using inverse_operator_t = typename ::concrete::inverse_operator<Op>::type;
+
+	template<class Op>
+	struct inverse_assignment_operator {
+		using type = ::concrete::assignment_operator_t<::concrete::inverse_operator_t<Op>>;
+	};
+
+	template<class Op>
+	using inverse_assignment_operator_t = typename ::concrete::inverse_assignment_operator<Op>::type;
+
+	struct set_tag {};
+	struct magma_tag : ::concrete::set_tag {};
 	struct semigroup_tag : ::concrete::magma_tag {};
 	struct monoid_tag : ::concrete::semigroup_tag {};
 	struct group_tag : ::concrete::monoid_tag {};
-	struct abelian_magma_tag : ::concrete::magma_tag {};
-	struct abelian_semigroup_tag : ::concrete::semigroup_tag, ::concrete::abelian_magma_tag {};
-	struct abelian_monoid_tag : ::concrete::monoid_tag, ::concrete::abelian_semigroup_tag {};
-	struct abelian_group_tag : ::concrete::group_tag, ::concrete::abelian_monoid_tag {};
 
 	template<class Op>
-	struct algebraic_traits {};
+	struct algebraic_traits {
+		static constexpr bool associative{false};
+		static constexpr bool invertible{false};
+		static constexpr bool commutative{false};
+		using algebraic_structure_tag = ::concrete::set_tag;
+	};
 
 	template<class T>
 	struct algebraic_traits<::concrete::add<T>> {
-		using value_type = T;
-		using operator_type = ::concrete::add<value_type>;
-
 		static constexpr bool associative{true};
-		static constexpr value_type identity{0};
-		using inverse_operator = ::concrete::subtract<value_type>;
-		static constexpr bool abelian{true};
-
-		using algebraic_structure_tag = ::concrete::abelian_group_tag;
+		static constexpr T identity{0};
+		static constexpr bool invertible{true};
+		static constexpr bool commutative{true};
+		using algebraic_structure_tag = ::concrete::group_tag;
 	};
 
 	template<class T>
 	struct algebraic_traits<::concrete::subtract<T>> {
-		using value_type = T;
-		using operator_type = ::concrete::subtract<value_type>;
-
 		static constexpr bool associative{false};
-		static constexpr bool abelian{false};
-
+		static constexpr bool invertible{false};
+		static constexpr bool commutative{false};
 		using algebraic_structure_tag = ::concrete::magma_tag;
 	};
 
 	template<class T>
 	struct algebraic_traits<::concrete::multiply<T>> {
-		using value_type = T;
-		using operator_type = ::concrete::multiply<value_type>;
-
 		static constexpr bool associative{true};
-		static constexpr value_type identity{1};
-		using inverse_operator = ::concrete::divide<value_type>;
-		static constexpr bool abelian{true};
-
-		using algebraic_structure_tag = ::concrete::abelian_group_tag;
+		static constexpr T identity{1};
+		static constexpr bool invertible{true};
+		static constexpr bool commutative{true};
+		using algebraic_structure_tag = ::concrete::group_tag;
 	};
 
 	template<class T>
 	struct algebraic_traits<::concrete::divide<T>> {
-		using value_type = T;
-		using operator_type = ::concrete::divide<value_type>;
-
 		static constexpr bool associative{false};
-		static constexpr bool abelian{false};
-
+		static constexpr bool invertible{false};
+		static constexpr bool commutative{false};
 		using algebraic_structure_tag = ::concrete::magma_tag;
 	};
 
 	template<class T>
 	struct algebraic_traits<::concrete::modulo<T>> {
-		using value_type = T;
-		using operator_type = ::concrete::modulo<value_type>;
-
 		static constexpr bool associative{false};
-		static constexpr bool abelian{false};
-
+		static constexpr bool invertible{false};
+		static constexpr bool commutative{false};
 		using algebraic_structure_tag = ::concrete::magma_tag;
+	};
+
+	template<class Op>
+	constexpr bool is_magma_v{::std::is_base_of_v<::concrete::magma_tag, typename ::concrete::algebraic_traits<Op>::algebraic_structure_tag>};
+
+	template<class Op>
+	constexpr bool is_semigroup_v{::std::is_base_of_v<::concrete::semigroup_tag, typename ::concrete::algebraic_traits<Op>::algebraic_structure_tag>};
+
+	template<class Op>
+	constexpr bool is_monoid_v{::std::is_base_of_v<::concrete::monoid_tag, typename ::concrete::algebraic_traits<Op>::algebraic_structure_tag>};
+
+	template<class Op>
+	constexpr bool is_group_v{::std::is_base_of_v<::concrete::group_tag, typename ::concrete::algebraic_traits<Op>::algebraic_structure_tag>};
+
+	template<class Op>
+	struct is_magma {
+		static constexpr bool value{::concrete::is_magma_v<Op>};
+	};
+
+	template<class Op>
+	struct is_semigroup {
+		static constexpr bool value{::concrete::is_semigroup_v<Op>};
+	};
+
+	template<class Op>
+	struct is_monoid {
+		static constexpr bool value{::concrete::is_monoid_v<Op>};
+	};
+
+	template<class Op>
+	struct is_group {
+		static constexpr bool value{::concrete::is_group_v<Op>};
 	};
 
 	template<class T, class Compare = ::std::less<T>>
@@ -219,24 +260,18 @@ namespace concrete {
 
 	template<class T, class Compare>
 	struct algebraic_traits<::concrete::maximum<T, Compare>> {
-		using value_type = T;
-		using operator_type = ::concrete::maximum<value_type, Compare>;
-
 		static constexpr bool associative{true};
-		static constexpr bool abelian{true};
-
-		using algebraic_structure_tag = ::concrete::abelian_semigroup_tag;
+		static constexpr bool invertible{false};
+		static constexpr bool commutative{true};
+		using algebraic_structure_tag = ::concrete::semigroup_tag;
 	};
 
 	template<class T, class Compare>
 	struct algebraic_traits<::concrete::minimum<T, Compare>> {
-		using value_type = T;
-		using operator_type = ::concrete::minimum<value_type, Compare>;
-
 		static constexpr bool associative{true};
-		static constexpr bool abelian{true};
-
-		using algebraic_structure_tag = ::concrete::abelian_semigroup_tag;
+		static constexpr bool invertible{false};
+		static constexpr bool commutative{true};
+		using algebraic_structure_tag = ::concrete::semigroup_tag;
 	};
 
 }

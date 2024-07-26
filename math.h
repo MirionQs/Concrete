@@ -52,7 +52,7 @@ namespace concrete {
 
 	constexpr ::concrete::uint64_t power(::concrete::uint64_t x, ::concrete::uint64_t y) noexcept {
 		::concrete::uint64_t res{1}, tab[16]{1};
-		for (size_t i{1}; i != 16; ++i) {
+		for (::std::size_t i{1}; i != 16; ++i) {
 			tab[i] = tab[i - 1] * x;
 		}
 		unsigned n{(unsigned)::concrete::countl_zero(y) & ~3};
